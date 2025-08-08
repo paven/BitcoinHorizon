@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "start-server-and-test": "^2.0.13",
+    "vite": "^7.1.1"
+  },
+  "scripts": {
+    "dev": "vite",
+    "test": "playwright test",
+    "test:ui": "start-server-and-test dev http://localhost:5173 test"
+  }
+}
