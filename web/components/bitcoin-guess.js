@@ -11,7 +11,10 @@ export default define({
         host.guess = 'up';
     }}">Up
     </button>
-    <button id="guess-down" type="button">Down</button>
+    <button id="guess-down" type="button" onclick="${() => {
+      host.guess = 'down';
+    }}">Down
+    </button>
     <div id="guess-message"></div>
   `;
   },

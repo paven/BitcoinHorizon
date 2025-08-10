@@ -1,7 +1,19 @@
 import { test, expect } from '@playwright/test';
 
+// Mock the CoinGecko API for all tests in this file
+const mockBTCPriceRoute = async (page) => {
+  await page.route('https://api.coingecko.com/api/v3/simple/price*', async route => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ bitcoin: { usd: 65000 } }),
+    });
+  });
+};
+
 test('bitcoin-price component fetches and displays BTC/USD price', async ({ page }) => {
   console.log('[test] Starting bitcoin-price component test');
+  await mockBTCPriceRoute(page);
   await page.goto('http://localhost:5173/index.html');
   // Wait for the component to render and fetch the price
   const priceLocator = page.locator('bitcoin-price');
@@ -23,6 +35,7 @@ test('bitcoin-price component fetches and displays BTC/USD price', async ({ page
 
 test('bitcoin-price component dispatches btc-price-updated event with price', async ({ page }) => {
   let eventDetail;
+  await mockBTCPriceRoute(page);
   await page.goto('http://localhost:5173/tests.html');
   await page.setContent('<section id="price-section"></section>');
 
