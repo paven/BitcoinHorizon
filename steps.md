@@ -17,6 +17,8 @@ Legend:
   - [x] Add "up" and "down" buttons
   - [x] Write test for component rendering
   - [>] Implement guess submission logic
+    - [>] Define the state structure for the user's guess (e.g., "up" or "down", and whether a guess is currently
+      active)
   - [ ] Add visual feedback for selected guess
 
 ---

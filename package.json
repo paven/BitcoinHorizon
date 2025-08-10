@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@playwright/test": "^1.54.2",
+    "nock": "^14.0.9",
     "start-server-and-test": "^2.0.13",
     "vite": "^7.1.1"
   },
