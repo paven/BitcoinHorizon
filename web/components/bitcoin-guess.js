@@ -7,11 +7,11 @@ export default define({
     render: function (host) {
       return html`
     <h2>Make Your Guess</h2>
-    <button id="guess-up" type="button" onclick="${() => {
+    <button id="guess-up" type="button" class="${host.guess === 'up' ? 'selected' : ''}" onclick="${() => {
         host.guess = 'up';
     }}">Up
     </button>
-    <button id="guess-down" type="button" onclick="${() => {
+    <button id="guess-down" type="button" class="${host.guess === 'down' ? 'selected' : ''}" onclick="${() => {
       host.guess = 'down';
     }}">Down
     </button>
