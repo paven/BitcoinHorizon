@@ -34,35 +34,24 @@ test('bitcoin-price component fetches and displays BTC/USD price', async ({ page
 });
 
 test('bitcoin-price component dispatches btc-price-updated event with price', async ({ page }) => {
-  let eventDetail;
   await mockBTCPriceRoute(page);
   await page.goto('http://localhost:5173/tests.html');
   await page.setContent('<section id="price-section"></section>');
 
-  // Log the DOM after page.goto and setContent
-  const dom = await page.content();
-  console.log('[test] DOM after goto and setContent:', dom);
+  // Dynamically load the component script and wait for it to be defined
+  await page.addScriptTag({ type: 'module', url: 'http://localhost:5173/components/bitcoin-price.js' });
+  await page.waitForFunction(() => customElements.get('bitcoin-price'));
 
-  await page.exposeFunction('onBTCPriceUpdated', detail => {
-    eventDetail = detail;
-  });
-
-  // Attach the event listener before loading the component
+  // Add the element after the script is loaded and defined, and attach the event listener directly to the element
   await page.evaluate(() => {
     window.eventDetail = undefined;
-    document.body.addEventListener('btc-price-updated', e => {
-      window.eventDetail = e.detail;
-      window.onBTCPriceUpdated(e.detail);
-    }, { once: true });
-  });
-
-  // Dynamically load the component script
-  await page.addScriptTag({ type: 'module', url: 'http://localhost:5173/components/bitcoin-price.js' });
-
-  // Add the element after the script is loaded
-  await page.evaluate(() => {
     const el = document.createElement('bitcoin-price');
+    el.addEventListener('btc-price-updated', e => {
+      window.eventDetail = e.detail;
+      console.log('[test] btc-price-updated event received:', e.detail);
+    }, { once: true });
     document.getElementById('price-section').appendChild(el);
+    console.log('bitcoin-price element appended');
   });
 
   // Wait for the event to be received or timeout
@@ -70,6 +59,7 @@ test('bitcoin-price component dispatches btc-price-updated event with price', as
 
   // Get the event detail from the browser context
   const priceEvent = await page.evaluate(() => window.eventDetail);
+  console.log('[test] window.eventDetail after wait:', priceEvent);
 
   expect(priceEvent).toBeDefined();
   expect(typeof priceEvent.price).toBe('number');

@@ -15,8 +15,9 @@ export default define({
             fetchBTCPrice().then((result) => {
                 console.log('[bitcoin-price] fetchBTCPrice result', result);
                 host.price = result;
-                function dispatchPriceEvent(price) {
-                    console.log('[bitcoin-price] dispatching btc-price-updated', price);
+
+                function dispatchPriceEvent() {
+                    console.log('[bitcoin-price] dispatching btc-price-updated', host.price);
                     host.error ? host.dispatchEvent(
                             new CustomEvent("btc-price-error", {
                                 detail: host.price,
@@ -31,7 +32,8 @@ export default define({
                             })
                         );
                 }
-                dispatchPriceEvent(result); // <-- FIX: actually dispatch the event
+
+                dispatchPriceEvent();
                 return null; //no need for
 
             })
