@@ -1,15 +1,91 @@
 # Implementation Steps for BitcoinHorizon
 
-- [ ] Set up project structure and initialize repository.
-- [ ] Implement user authentication and session persistence.
-- [ ] Display the current BTC/USD price using a 3rd party API.
-- [ ] Show the user's current score.
-- [ ] Allow the user to submit a guess ("up" or "down").
-- [ ] Lock further guesses until the current guess is resolved.
-- [ ] Resolve the guess after 60 seconds and a price change.
-- [ ] Update the user's score based on the guess outcome.
-- [ ] Persist user scores in a backend data store (preferably AWS).
-- [ ] Ensure users can resume their session and score after closing/reopening the browser.
-- [ ] Write tests for core features and logic.
-- [ ] Prepare deployment and add instructions to the README.
-- [ ] Add a favicon to the app for better branding and browser tab visibility.
+---
+Legend:
+
+- [ ] To do
+- [x] Done
+- [>] Now / Next / In Progress
+- [/] Partially done
+- [-] Dropped/cancelled
+- [?] Question
+
+---
+
+- [ ] Allow the user to submit a guess ("up" or "down")
+  - [x] Create basic bitcoin-guess component structure
+  - [x] Add "up" and "down" buttons
+  - [x] Write test for component rendering
+  - [>] Implement guess submission logic
+  - [ ] Add visual feedback for selected guess
+
+---
+
+# later
+
+- [ ] Players should be able to close their browser and return back to see their score and continue to make more guesses
+  - [ ] Implement session storage
+  - [ ] Add session recovery logic
+  - [ ] Write tests for session persistence
+
+- [ ] Display the current BTC/USD price using a 3rd party API
+  - [x] Implement fetchBTCPrice function with API integration
+  - [x] Add error handling for API calls
+  - [x] Write tests for BTC price fetching
+  - [ ] Create bitcoin-price component UI
+  - [ ] Add price auto-refresh functionality
+
+- [ ] Implement user authentication and session persistence
+  - [ ] Create authentication UI in auth-section
+  - [ ] Implement authentication flow
+  - [ ] Add session management
+  - [ ] Write tests for auth flow
+
+- [ ] Show the user's current score
+  - [ ] Create score display component
+  - [ ] Implement score tracking logic
+  - [ ] Add tests for score management
+
+- [ ] Lock further guesses until the current guess is resolved
+  - [ ] Add state management for guess status
+  - [ ] Implement button disable logic
+  - [ ] Add visual indicators for locked state
+
+- [ ] Resolve the guess after 60 seconds and a price change
+  - [ ] Implement timer functionality
+  - [ ] Add price comparison logic
+  - [ ] Create resolution display
+  - [ ] Write tests for resolution logic
+
+- [ ] Update the user's score based on the guess outcome
+  - [ ] Implement scoring rules
+  - [ ] Add score update logic
+  - [ ] Write tests for score calculations
+
+- [ ] Persist user scores in a backend data store (preferably AWS)
+  - [ ] Set up AWS infrastructure
+  - [ ] Implement data storage logic
+  - [ ] Add data retrieval functions
+  - [ ] Write tests for data persistence
+
+- [x] Review tests for core features and logic
+  - [x] Setup Playwright test environment
+  - [x] Write tests for BTC price fetching
+  - [x] Test component rendering
+  - [ ] Add integration tests
+  - [ ] Add end-to-end tests
+
+- [ ] Add a favicon to the app for better branding and browser tab visibility
+  - [ ] Create favicon asset
+  - [ ] Add favicon links to HTML
+
+- [ ] Prepare deployment and add instructions to the README
+  - [ ] Write deployment documentation
+  - [ ] Add setup instructions
+  - [ ] Document testing procedures
+  - [ ] Include usage guidelines
+
+- [x] Set up project structure and initialize repository
+  - [x] Basic HTML structure with sections for components
+  - [x] Project dependencies setup (@playwright/test, start-server-and-test, vite)
+  - [x] Basic component structure (bitcoin-guess, bitcoin-price)

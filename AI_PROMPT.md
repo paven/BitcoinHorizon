@@ -5,6 +5,7 @@ For all AI-assisted code generation, refactoring, and documentation in this proj
 - [DESIGN_PRINCIPLES.md](./DESIGN_PRINCIPLES.md)
 - [PRODUCT_GOAL.md](./PRODUCT_GOAL.md)
 - [TECHNOLOGY.md](./TECHNOLOGY.md)
+- [STEPS.md](./steps.md)
 
 Do not repeat or summarize their content here—always refer to those documents directly for the latest rules and clarifications.
 

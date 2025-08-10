@@ -33,8 +33,13 @@ This project follows established software design paradigms to ensure maintainabi
 9.1 [TDD (Wikipedia)](https://en.wikipedia.org/wiki/Test-driven_development)
 9.2 production code should be motivate by tests.
 
-## 10. Continuous Delivery
-10.1 [Continuous Delivery](https://continuousdelivery.com/)
+## 10. Mikado Method
+
+10.1 [Mikado Method (methods & tools)](https://www.methodsandtools.com/archive/mikado.php)
+
+## 11. Continuous Delivery
+
+11.1 [Continuous Delivery](https://continuousdelivery.com/)
 
 
 ## 12. KISS (Keep It Simple, Stupid)
