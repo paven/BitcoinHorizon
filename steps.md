@@ -12,4 +12,4 @@
 - [ ] Ensure users can resume their session and score after closing/reopening the browser.
 - [ ] Write tests for core features and logic.
 - [ ] Prepare deployment and add instructions to the README.
-
+- [ ] Add a favicon to the app for better branding and browser tab visibility.

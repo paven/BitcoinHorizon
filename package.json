@@ -6,7 +6,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "test": "playwright test",
-    "test:ui": "start-server-and-test dev http://localhost:5173 test"
+    "test": "npm run test:js && npm run test:ui",
+    "test:js": "playwright test tests/fetchBTCPrice.spec.js",
+    "test:ui": "start-server-and-test dev http://localhost:5173 \"playwright test tests/bitcoin-price.spec.js tests/bitcoin-guess.spec.js\""
   }
 }
