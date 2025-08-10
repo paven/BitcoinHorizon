@@ -1,2 +1,13 @@
-/* Styles will be added later. */
+button.selected {
+  background: #e0ffe0;
+  border: 2px solid #2ecc40;
+  font-weight: bold;
+  box-shadow: 0 0 8px #2ecc40;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+#guess-message {
+  margin-top: 1em;
+  font-size: 1.2em;
+  min-height: 2em;
+}
 

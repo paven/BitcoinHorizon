@@ -19,8 +19,10 @@ Legend:
   - [>] Implement guess submission logic
     - [/] Define the state structure for the user's guess (e.g., "up" or "down", and whether a guess is currently
       active)
-      - [ X ] State structure on componend
+      - [X] State structure on componend
   - [>] Add visual feedback for selected guess
+    - [>] Add visual feedback for selected state
+    - [ ] Add visual feedback for not selected state
 
 ---
 
