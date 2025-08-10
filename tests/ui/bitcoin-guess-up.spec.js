@@ -11,4 +11,3 @@ test('clicking Up sets guess to up and isGuessActive true', async ({page}) => {
     expect(guess).toBe('up');
     expect(isGuessActive).toBe(true);
 });
-

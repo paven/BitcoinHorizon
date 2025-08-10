@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vite",
     "test": "npm run test:js && npm run test:ui",
-    "test:js": "playwright test tests/fetchBTCPrice.spec.js",
-    "test:ui": "start-server-and-test dev http://localhost:5173 \"playwright test tests/bitcoin-price.spec.js tests/bitcoin-guess.spec.js\""
+    "test:js": "npx playwright test tests/js/*.js",
+    "test:ui": "npx playwright test tests/ui/*.js"
   }
 }

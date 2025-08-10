@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import nock from 'nock';
-
-import { fetchBTCPrice } from '../web/lib/fetchBTCPrice.js';
+import { fetchBTCPrice } from '../../web/lib/fetchBTCPrice.js';
 
 test.beforeEach(() => {
   nock.cleanAll();
