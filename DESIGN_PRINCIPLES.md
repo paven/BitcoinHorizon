@@ -34,11 +34,9 @@ This project follows established software design paradigms to ensure maintainabi
 9.2 production code should be motivate by tests.
 
 ## 10. Mikado Method
-
 10.1 [Mikado Method (methods & tools)](https://www.methodsandtools.com/archive/mikado.php)
 
 ## 11. Continuous Delivery
-
 11.1 [Continuous Delivery](https://continuousdelivery.com/)
 
 
