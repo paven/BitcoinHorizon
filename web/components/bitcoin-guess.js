@@ -7,16 +7,18 @@ export default define({
     render: function (host) {
       return html`
     <h2>Make Your Guess</h2>
-    <button id="guess-up" type="button" class="${host.guess === 'up' ? 'selected' : ''}" onclick="${() => {
+    <button id="guess-up" type="button"
+            class="${host.guess === 'up' ? 'selected' : host.guess === null ? '' : 'not-selected'}" onclick="${() => {
         host.guess = 'up';
     }}">Up ${host.guess === 'up' ? '✅' : ''}
     </button>
-    <button id="guess-down" type="button" class="${host.guess === 'down' ? 'selected' : ''}" onclick="${() => {
+    <button id="guess-down" type="button"
+            class="${host.guess === 'down' ? 'selected' : host.guess === null ? '' : 'not-selected'}" onclick="${() => {
       host.guess = 'down';
     }}">Down ${host.guess === 'down' ? '✅' : ''}
     </button>
     <div id="guess-message">
-      ${host.guess ? `You selected: <b>${host.guess.toUpperCase()}</b> ${host.guess === 'up' ? '🚀' : '📉'}` : 'No guess selected.'}
+      ${host.guess ? html`You selected: <b>${host.guess.toUpperCase()}</b> ${host.guess === 'up' ? '🚀' : '📉'}` : 'No guess selected.'}
     </div>
   `;
   },
