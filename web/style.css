@@ -6,7 +6,7 @@ button.selected {
   transition: background 0.2s, box-shadow 0.2s;
 }
 
-button.not-selected {
+button.disabled {
   background: #f8f8f8;
   border: 2px dashed #bbb;
   color: #bbb;
@@ -17,7 +17,7 @@ button.not-selected {
   transition: background 0.2s, box-shadow 0.2s, color 0.2s, border 0.2s;
 }
 
-button:not(.selected):not(.not-selected) {
+button:not(.selected):not(.disabled) {
   background: #fff;
   border: 2px solid #2d8cf0;
   color: #2d8cf0;
@@ -29,13 +29,14 @@ button:not(.selected):not(.not-selected) {
   transition: background 0.2s, box-shadow 0.2s, color 0.2s, border 0.2s;
 }
 
-button:not(.selected):hover {
+button.disabled:hover {
   background: #e0e0e0;
   border-color: #888;
   color: #333;
   opacity: 1;
   filter: none;
 }
+
 #guess-message {
   margin-top: 1em;
   font-size: 1.2em;

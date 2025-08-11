@@ -20,6 +20,12 @@ Legend:
     - [/] Define the state structure for the user's guess (e.g., "up" or "down", and whether a guess is currently
       active)
       - [X] State structure on componend
+      - [ ] State structure on server
+    - [>] Add logic to lock further guesses until the current guess is resolved
+      - [x] Lock guess submission in the component
+      - [>] Add visual feedback for locked state
+      - [ ] Add lock as part of server state
+    - [ ] Implement guess resolution after 60 seconds or a price change
   - [x] Add visual feedback for guess selection
     - [x] Add visual feedback for selected state
     - [x] Add visual feedback for not selected state
