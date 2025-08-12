@@ -19,11 +19,13 @@ Legend:
       resolved when the price changes and at least 60 seconds have passed since the guess was made") - AI
   - [>] Implement timer functionality
     - [>] Add price comparison logic
-      - [>] fetch new price after 60 seconds
-      - [ ] Compare the current price with the price at the time of the guess
-      - [ ] Determine if the guess was correct based on the price change
-      - [ ] Show the result of the guess (correct or incorrect)]
-      - [ ] Unlocl the guess submission button after resolution
+      - [>] Bitcoin compare component
+        - [>] **Create the initial bitcoin-compare component file and outline its structure.**
+        - [ ] fetch new price after 60 seconds
+        - [ ] Compare the current price with the price at the time of the guess
+        - [ ] Determine if the guess was correct based on the price change
+        - [ ] Show the result of the guess (correct or incorrect)]
+        - [ ] Unlocl the guess submission button after resolution
 
   - [ ] Add price comparison logic
   - [ ] Create resolution display
@@ -118,3 +120,4 @@ Legend:
   - [x] Basic HTML structure with sections for components
   - [x] Project dependencies setup (@playwright/test, start-server-and-test, vite)
   - [x] Basic component structure (bitcoin-guess, bitcoin-price)
+    Implement UI buttons for "Up" and "Down" guesses that update the global guess state using the store.
