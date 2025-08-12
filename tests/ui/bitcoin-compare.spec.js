@@ -48,6 +48,15 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('receives and displays initial price when a guess is made', async ({page}) => {
+        // Mock the API route to ensure the test is reliable and not dependent on a live service.
+        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({bitcoin: {usd: 68000}}),
+            });
+        });
+
         await page.goto('http://localhost:5173/index.html');
 
         const priceComponent = page.locator('bitcoin-price');
@@ -57,6 +66,7 @@ test.describe('bitcoin-compare', () => {
         // 1. Wait for the initial price to load and get its value
         await expect(priceComponent.locator('strong')).toBeVisible({timeout: 10000});
         const initialPrice = await priceComponent.evaluate(el => el.price.price);
+        expect(initialPrice).toBe(68000);
 
         // 2. Make a guess
         await guessUpButton.click();

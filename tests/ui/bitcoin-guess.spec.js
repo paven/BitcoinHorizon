@@ -43,44 +43,39 @@ test('guess buttons are disabled after a guess is made', async ({page}) => {
   await expect(page.locator('#guess-down')).toBeDisabled();
 });
 
-test('fetches new price after 60 seconds', async ({page}) => {
-  await page.goto('http://localhost:5173/index.html');
-  // Simulate making a guess
-  await page.click('#guess-up');
+test('triggers a new price fetch after 60 seconds', async ({page}) => {
+    const priceComponent = page.locator('bitcoin-price');
+    let fetchCount = 0;
 
-  // Mock fetchBTCPrice to return a different price after 60s
-  await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route, request) => {
-    const url = new URL(request.url());
-    // If this is the second fetch (after 60s), return a different price
-    if (url.searchParams.get('mock') === 'after60s') {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({bitcoin: {usd: 70000}}),
-      });
-    } else {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({bitcoin: {usd: 65000}}),
-      });
-    }
-  });
+    // 1. Mock the API route to track calls and provide different prices
+    // This MUST be done BEFORE navigating.
+    await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
+        fetchCount++;
+        const price = fetchCount === 1 ? 65000 : 70000; // First call gets 65k, second gets 70k
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({bitcoin: {usd: price}}),
+        });
+    });
 
-  // Fast-forward 60 seconds
-  await page.evaluate(() => {
-    window.setTimeout = (fn, ms) => {
-      if (ms === 60000) fn();
-    };
-  });
+    // 0. Install fake timers and navigate to the page
+    await page.clock.install({time: new Date()});
+    await page.goto('http://localhost:5173/index.html');
 
-  // Trigger whatever mechanism your app uses to fetch the new price after 60s
-  // (This may need to be adjusted to match your implementation)
+    // 2. Wait for the initial price to load
+    await expect(priceComponent).toContainText('65000', {timeout: 10000});
+    expect(fetchCount).toBe(1);
 
-  // Wait for the UI to reflect the new price or resolution
-  // (You may want to check for a result message, unlocked state, or updated price)
-  // Example:
-  // await expect(page.locator('#guess-message')).toContainText('resolved');
+    // 3. Make a guess to start the timer
+    await page.click('#guess-up');
+
+    // 4. Fast-forward time by 60 seconds
+    await page.clock.fastForward(60000);
+
+    // 5. Assert that a new price has been fetched and the UI is updated
+    await expect(priceComponent).toContainText('70000');
+    expect(fetchCount).toBe(2);
 });
 
 test('shows loading or waiting state for 60 seconds after guess before fetching new price', async ({page}) => {

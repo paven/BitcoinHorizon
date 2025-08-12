@@ -4,7 +4,10 @@ function startWaiting(host) {
     host.isWaiting = true;
     setTimeout(() => {
         host.isWaiting = false;
-        host.render(); // force re-render
+        // Signal that the 60-second wait is over.
+        // The parent application will listen for this and trigger a new price fetch.
+        console.log("Dispatching timer-expired event");
+        host.dispatchEvent(new CustomEvent('timer-expired', {bubbles: true, composed: true}));
     }, 60000); // 60 seconds
 }
 
@@ -19,7 +22,6 @@ function makeGuess(host, guess) {
             composed: true
         }));
         startWaiting(host);
-        host.render();
     }
 }
 

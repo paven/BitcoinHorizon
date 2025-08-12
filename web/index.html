@@ -39,6 +39,11 @@
       compareEl.guess = event.detail.guess;
       compareEl.initialPrice = priceEl.price.price;
     });
+
+    // Listen for the timer to expire and trigger a new price fetch
+    document.body.addEventListener('timer-expired', () => {
+      priceEl.refreshPrice();
+    });
   </script>
 </body>
 </html>
