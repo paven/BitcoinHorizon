@@ -4,7 +4,7 @@ export default define({
     tag: "bitcoin-compare",
     guess: undefined,
     initialPrice: undefined,
-    guessMade: (host, guess, initialPrice) => {
+    makeGuess: (host, guess, initialPrice) => {
         host.guess = guess;
         host.initialPrice = initialPrice;
         console.log("Guess made:", {guess, initialPrice});

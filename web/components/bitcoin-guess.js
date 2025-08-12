@@ -8,6 +8,16 @@ function startWaiting(host) {
     }, 60000); // 60 seconds
 }
 
+function makeGuess(host, guess) {
+    if (!host.guess) {
+        host.guess = guess;
+        // Emit guess-made event
+        host.dispatchEvent(new CustomEvent('guess-made', {detail: {guess: guess}}));
+        startWaiting(host);
+        host.render();
+    }
+}
+
 export default define({
   tag: 'bitcoin-guess',
     guess: null, // 'up' | 'down' | null
@@ -73,24 +83,14 @@ export default define({
     <button id="guess-up" type="button"
             class="${host.guess === 'up' ? 'selected' : host.guess === null ? '' : 'disabled'}"
             disabled="${host.guess ? 'disabled' : ''}"
-            onclick="${() => {
-          if (!host.guess) {
-              host.guess = 'up';
-              startWaiting(host);
-              host.render();
-          }
-            }}">Up ${host.guess === 'up' ? '✅' : ''}
+            onclick="${() => makeGuess(host, 'up')}"
+    >Up ${host.guess === 'up' ? '✅' : ''}
     </button>
     <button id="guess-down" type="button"
             class="${host.guess === 'down' ? 'selected' : host.guess === null ? '' : 'disabled'}"
             disabled="${host.guess ? 'disabled' : ''}"
-            onclick="${() => {
-          if (!host.guess) {
-              host.guess = 'down';
-              startWaiting(host);
-              host.render();
-          }
-            }}">Down ${host.guess === 'down' ? '✅' : ''}
+            onclick="${() => makeGuess(host, 'down')}"
+    >Down ${host.guess === 'down' ? '✅' : ''}
     </button>
     <div id="guess-message">
       ${host.guess ? (
