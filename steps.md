@@ -22,8 +22,8 @@ Legend:
       - [>] Bitcoin compare component
         - [x] Create the initial bitcoin-compare component file and outline its structure.
         - [x] Call guessMade from the bitcoin-guess component when a guess is made
-        - [>] fetch new price after 60 seconds
-        - [ ] Compare the current price with the price at the time of the guess
+        - [x] fetch new price after 60 seconds
+        - [>] Compare the current price with the price at the time of the guess
         - [ ] Determine if the guess was correct based on the price change
         - [ ] Show the result of the guess (correct or incorrect)]
         - [ ] Unlocl the guess submission button after resolution

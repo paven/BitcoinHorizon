@@ -55,7 +55,7 @@ export default define({
                         : "Loading BTC price..."}
       </span>
             `;
-        },
+        }
 });
 
 console.log("[bitcoin-price] Component defined");
