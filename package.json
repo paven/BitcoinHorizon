@@ -6,8 +6,8 @@
     "vite": "^7.1.1"
   },
   "scripts": {
-    "dev": "vite",
-    "test": "npm run test:js && npm run test:ui",
+    "dev": "npx vite --port 5174",
+    "test": "npx playwright test",
     "test:js": "npx playwright test tests/js/*.js",
     "test:ui": "npx playwright test tests/ui/*.js"
   }
