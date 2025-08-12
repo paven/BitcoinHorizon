@@ -12,4 +12,22 @@ test.describe('bitcoin-compare', () => {
         const guess = await compare.evaluate(el => el.guess);
         expect(guess === undefined || guess === null).toBeTruthy();
     });
+    test('updates guess when guess-made event is dispatched', async ({page}) => {
+        await page.goto('http://localhost:5173/index.html');
+        const compare = await page.locator('bitcoin-compare');
+        // Dispatch the event from the bitcoin-guess element
+        await page.evaluate(() => {
+            const guessEl = document.querySelector('bitcoin-guess');
+            guessEl.dispatchEvent(new CustomEvent('guess-made', {
+                detail: {guess: 'up'},
+                bubbles: true,
+                composed: true
+            }));
+        });
+        // Wait for the component to update
+        await expect(compare).toContainText('Guess: up');
+        // Check the property is updated
+        const guess = await compare.evaluate(el => el.guess);
+        expect(guess).toBe('up');
+    });
 });

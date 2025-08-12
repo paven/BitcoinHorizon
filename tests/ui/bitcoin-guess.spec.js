@@ -90,3 +90,57 @@ test('shows loading or waiting state for 60 seconds after guess before fetching 
   await expect(page.locator('#guess-message')).toContainText(/waiting|loading|pending|resolving/i);
   // (This will fail until the component implements a waiting state after a guess)
 });
+
+test('dispatches guess-made event when a guess is made', async ({page}) => {
+  await page.goto('http://localhost:5173/index.html');
+  // Listen for the event in the browser context
+  const eventPromise = page.evaluate(() => {
+    return new Promise(resolve => {
+      const guessEl = document.querySelector('bitcoin-guess');
+      guessEl.addEventListener('guess-made', (event) => {
+        resolve(event.detail.guess);
+      }, {once: true});
+    });
+  });
+  // Click the Up button to trigger the event
+  await page.click('#guess-up');
+  // Assert the event was dispatched with the correct detail
+  const guess = await eventPromise;
+  expect(guess).toBe('up');
+});
+
+test('parent node receives guess-made event when a guess is made', async ({page}) => {
+  await page.goto('http://localhost:5173/index.html');
+  // Listen for the event on the parent node of bitcoin-guess
+  const eventPromise = page.evaluate(() => {
+    return new Promise(resolve => {
+      const guessEl = document.querySelector('bitcoin-guess');
+      const parent = guessEl.parentNode;
+      parent.addEventListener('guess-made', (event) => {
+        resolve(event.detail.guess);
+      }, {once: true});
+    });
+  });
+  // Click the Down button to trigger the event
+  await page.click('#guess-down');
+  // Assert the event was dispatched with the correct detail
+  const guess = await eventPromise;
+  expect(guess).toBe('down');
+});
+
+test('body receives guess-made event when a guess is made', async ({page}) => {
+  await page.goto('http://localhost:5173/index.html');
+  // Listen for the event on document.body
+  const eventPromise = page.evaluate(() => {
+    return new Promise(resolve => {
+      document.body.addEventListener('guess-made', (event) => {
+        resolve(event.detail.guess);
+      }, {once: true});
+    });
+  });
+  // Click the Up button to trigger the event
+  await page.click('#guess-up');
+  // Assert the event was dispatched with the correct detail
+  const guess = await eventPromise;
+  expect(guess).toBe('up');
+});

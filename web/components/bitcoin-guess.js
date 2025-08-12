@@ -12,7 +12,12 @@ function makeGuess(host, guess) {
     if (!host.guess) {
         host.guess = guess;
         // Emit guess-made event
-        host.dispatchEvent(new CustomEvent('guess-made', {detail: {guess: guess}}));
+        console.log("Dispatching guess-made event", guess);
+        host.dispatchEvent(new CustomEvent('guess-made', {
+            detail: {guess: guess},
+            bubbles: true,
+            composed: true
+        }));
         startWaiting(host);
         host.render();
     }
