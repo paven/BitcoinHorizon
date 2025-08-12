@@ -30,4 +30,20 @@ test.describe('bitcoin-compare', () => {
         const guess = await compare.evaluate(el => el.guess);
         expect(guess).toBe('up');
     });
+
+    test('updates when user clicks a guess button in bitcoin-guess', async ({page}) => {
+        await page.goto('http://localhost:5173/index.html');
+
+        const compare = page.locator('bitcoin-compare');
+        const guessUpButton = page.locator('bitcoin-guess #guess-up');
+
+        // Check initial state
+        await expect(compare).toContainText('Waiting for guess');
+
+        // Click the button in the other component
+        await guessUpButton.click();
+
+        // Assert the change in this component
+        await expect(compare).toContainText('Guess: up');
+    });
 });
