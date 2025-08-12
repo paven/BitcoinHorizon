@@ -46,4 +46,22 @@ test.describe('bitcoin-compare', () => {
         // Assert the change in this component
         await expect(compare).toContainText('Guess: up');
     });
+
+    test('receives and displays initial price when a guess is made', async ({page}) => {
+        await page.goto('http://localhost:5173/index.html');
+
+        const priceComponent = page.locator('bitcoin-price');
+        const compareComponent = page.locator('bitcoin-compare');
+        const guessUpButton = page.locator('bitcoin-guess #guess-up');
+
+        // 1. Wait for the initial price to load and get its value
+        await expect(priceComponent.locator('strong')).toBeVisible({timeout: 10000});
+        const initialPrice = await priceComponent.evaluate(el => el.price.price);
+
+        // 2. Make a guess
+        await guessUpButton.click();
+
+        // 3. Assert that the compare component now shows the initial price
+        await expect(compareComponent).toContainText(`Initial Price: ${initialPrice}`);
+    });
 });

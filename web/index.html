@@ -33,10 +33,11 @@
   <script type="module" src="./components/bitcoin-compare.js"></script>
   <script type="module">
     // Attach the event handler in the parent context
-    const guessEl = document.getElementById('bitcoin-guess');
     const compareEl = document.getElementById('bitcoin-compare');
-    guessEl.addEventListener('guess-made', (event) => {
+    const priceEl = document.querySelector('bitcoin-price');
+    document.body.addEventListener('guess-made', (event) => {
       compareEl.guess = event.detail.guess;
+      compareEl.initialPrice = priceEl.price.price;
     });
   </script>
 </body>

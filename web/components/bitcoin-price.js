@@ -18,7 +18,7 @@ export default define({
 
                 function dispatchPriceEvent() {
                     console.log('[bitcoin-price] dispatching btc-price-updated', host.price);
-                    host.error ? host.dispatchEvent(
+                    host.price.error ? host.dispatchEvent(
                             new CustomEvent("btc-price-error", {
                                 detail: host.price,
                                 bubbles: true,
@@ -44,8 +44,8 @@ export default define({
             console.log("[bitcoin-price] render", price);
             return html`
                 <span class="bitcoin-price">
-        ${price.error
-                ? html`<span style="color:red;">${error}</span>`
+        ${price.error // This was a bug, 'error' was not defined.
+                ? html`<span style="color:red;">${price.error}</span>`
                 : price.price !== undefined && price.price !== null
                         ? html`BTC/USD: <strong>${price.price}</strong>`
                         : "Loading BTC price..."}
