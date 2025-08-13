@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BitcoinHorizon</title>
   <meta name="description" content="Guess if Bitcoin goes up or down!">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <main>
@@ -18,7 +18,7 @@
       <bitcoin-price></bitcoin-price>
     </section>
     <section id="score-section">
-      <!-- User's score will be displayed here -->
+      <score-display></score-display>
     </section>
     <section id="guess-section">
       <bitcoin-guess id="bitcoin-guess"></bitcoin-guess>
@@ -28,12 +28,15 @@
       <!-- Guess history or results can be shown here -->
     </section>
   </main>
-  <script type="module" src="./components/bitcoin-guess.js"></script>
-  <script type="module" src="./components/bitcoin-price.js"></script>
-  <script type="module" src="./components/bitcoin-compare.js"></script>
+  <script type="module" src="/components/bitcoin-guess.js"></script>
+  <script type="module" src="/components/bitcoin-price.js"></script>
+  <script type="module" src="/components/bitcoin-compare.js"></script>
+  <script type="module" src="/components/score-display.js"></script>
   <script type="module">
     // Attach the event handler in the parent context
     const compareEl = document.getElementById('bitcoin-compare');
+    const guessEl = document.getElementById('bitcoin-guess');
+    const scoreEl = document.querySelector('score-display');
     const priceEl = document.querySelector('bitcoin-price');
     document.body.addEventListener('guess-made', (event) => {
       compareEl.guess = event.detail.guess;
@@ -51,6 +54,15 @@
       if (compareEl.guess) {
         compareEl.newPrice = event.detail.price;
       }
+    });
+
+    // Listen for the guess to be resolved and reset the guess component so a new guess can be made.
+    document.body.addEventListener('guess-resolved', (event) => {
+      console.log('[index.html] guess-resolved received, resetting guess component.');
+      if (event.detail && event.detail.result === 'correct') {
+        scoreEl.score += 1;
+      }
+      guessEl.guess = null;
     });
   </script>
 </body>

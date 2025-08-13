@@ -106,4 +106,74 @@ test.describe('bitcoin-compare', () => {
         await expect(priceComponent).toContainText('72000'); // First, confirm the price component updated
         await expect(compareComponent).toContainText('New Price: 72000');
     });
+
+    test('shows "Correct" when price goes up and guess was "up"', async ({page}) => {
+        let fetchCount = 0;
+        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
+            fetchCount++;
+            const price = fetchCount === 1 ? 68000 : 72000;
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({bitcoin: {usd: price}}),
+            });
+        });
+
+        await page.goto('http://localhost:5173/index.html');
+
+        const priceComponent = page.locator('bitcoin-price');
+        const compareComponent = page.locator('bitcoin-compare');
+        const guessUpButton = page.locator('bitcoin-guess #guess-up');
+
+        await expect(priceComponent).toContainText('68000');
+        await guessUpButton.click();
+
+        await priceComponent.dispatchEvent('refresh-btc-price');
+
+        await expect(compareComponent).toContainText('Result: Correct');
+    });
+
+    test('shows "Incorrect" when price goes down and guess was "up"', async ({page}) => {
+        let fetchCount = 0;
+        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
+            fetchCount++;
+            const price = fetchCount === 1 ? 68000 : 65000; // Price goes down
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({bitcoin: {usd: price}}),
+            });
+        });
+
+        await page.goto('http://localhost:5173/index.html');
+
+        const priceComponent = page.locator('bitcoin-price');
+        const compareComponent = page.locator('bitcoin-compare');
+        const guessUpButton = page.locator('bitcoin-guess #guess-up');
+
+        await expect(priceComponent).toContainText('68000');
+        await guessUpButton.click();
+
+        await priceComponent.dispatchEvent('refresh-btc-price');
+
+        await expect(compareComponent).toContainText('Result: Incorrect');
+    });
+
+    test('unlocks guess buttons after guess is resolved', async ({page}) => {
+        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
+            await route.fulfill({status: 200, body: JSON.stringify({bitcoin: {usd: 72000}})});
+        });
+        await page.goto('http://localhost:5173/index.html');
+
+        const guessUpButton = page.locator('bitcoin-guess #guess-up');
+        const guessDownButton = page.locator('bitcoin-guess #guess-down');
+
+        await guessUpButton.click();
+        await expect(guessUpButton).toBeDisabled();
+
+        await page.locator('bitcoin-price').dispatchEvent('refresh-btc-price');
+
+        await expect(guessUpButton).toBeEnabled();
+        await expect(guessDownButton).toBeEnabled();
+    });
 });

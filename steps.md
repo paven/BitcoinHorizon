@@ -15,26 +15,24 @@ Legend:
 
 # Now
 
-- [>] Implement guess resolution after 60 seconds or a price change
-  - [?] Is the 60 seconds from when the fetch or from the guess?
-    - [!] The 60 seconds is from when the guess is made, not from the fetch. (See PRODUCT_GOAL.md: "the guess is
-      resolved when the price changes and at least 60 seconds have passed since the guess was made") - AI
-  - [>] Implement timer functionality
-    - [>] Add price comparison logic
-      - [>] Bitcoin compare component
+- [x] Implement guess resolution after 60 seconds or a price change
+  - [x] Implement timer functionality
+    - [x] Add price comparison logic
+      - [x] Bitcoin compare component
         - [x] Create the initial bitcoin-compare component file and outline its structure.
         - [x] Call guessMade from the bitcoin-guess component when a guess is made
         - [x] fetch new price after 60 seconds
-        - [>] Compare the current price with the price at the time of the guess
-        - [ ] Determine if the guess was correct based on the price change
-        - [ ] Show the result of the guess (correct or incorrect)]
-        - [ ] Unlocl the guess submission button after resolution
+        - [x] Compare the current price with the price at the time of the guess
+        - [x] Determine if the guess was correct based on the price change
+        - [x] Show the result of the guess (correct or incorrect)]
+        - [x] Unlock the guess submission button after resolution
+
+- [>] Show the user's current score
+  - [>] Create score display component
+  - [x] Implement score tracking logic
+  - [>] Add tests for score management
 
 # later
-
-  - [ ] Add price comparison logic
-  - [ ] Create resolution display
-  - [ ] Write tests for resolution logic
 
 - [ ] Allow the user to submit a guess ("up" or "down")
   - [x] Create basic bitcoin-guess component structure
