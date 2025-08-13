@@ -42,7 +42,15 @@
 
     // Listen for the timer to expire and trigger a new price fetch
     document.body.addEventListener('timer-expired', () => {
-      priceEl.refreshPrice();
+      priceEl.dispatchEvent(new CustomEvent('refresh-btc-price'));
+    });
+
+    // Listen for the price to be updated and pass it to the compare component
+    document.body.addEventListener('btc-price-updated', (event) => {
+      // Only update the new price if a guess has already been made
+      if (compareEl.guess) {
+        compareEl.newPrice = event.detail.price;
+      }
     });
   </script>
 </body>

@@ -34,14 +34,16 @@ export default define({
         },
         connect: (host, key, invalidate) => {
             console.log('[bitcoin-price] connect called', host);
-            updatePrice(host);
-            return null; //no need for a disconnect function
+
+            const refreshHandler = () => updatePrice(host);
+            host.addEventListener('refresh-btc-price', refreshHandler);
+
+            updatePrice(host); // Initial fetch
+
+            return () => {
+                host.removeEventListener('refresh-btc-price', refreshHandler);
+            };
         }
-    },
-    // Expose a public method to allow external triggers for a price refresh.
-    refreshPrice: (host) => {
-        console.log('[bitcoin-price] refreshPrice called');
-        updatePrice(host);
     },
     render:
         ({price}) => {

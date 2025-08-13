@@ -4,6 +4,7 @@ export default define({
     tag: "bitcoin-compare",
     guess: null,
     initialPrice: undefined,
+    newPrice: undefined,
     render: (host) => html`
         <section class="bitcoin-compare">
             <h2>Bitcoin Compare</h2>
@@ -13,7 +14,9 @@ export default define({
                             : html`
                                 <p>
                                     Guess: <strong>${host.guess}</strong><br>
-                                    Initial Price: <strong>${host.initialPrice}</strong>
+                                    Initial Price: <strong>${host.initialPrice}</strong>${host.newPrice !== undefined ?
+                            html`<br>New Price: <strong>${host.newPrice}</strong>` : ''
+                        }
                                 </p>
                             `
             }

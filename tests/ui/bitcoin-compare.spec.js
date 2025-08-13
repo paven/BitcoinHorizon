@@ -74,4 +74,36 @@ test.describe('bitcoin-compare', () => {
         // 3. Assert that the compare component now shows the initial price
         await expect(compareComponent).toContainText(`Initial Price: ${initialPrice}`);
     });
+
+    test('receives and displays the new price after a refresh', async ({page}) => {
+        let fetchCount = 0;
+        // Mock the API to return different prices on subsequent calls
+        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
+            fetchCount++;
+            const price = fetchCount === 1 ? 68000 : 72000;
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({bitcoin: {usd: price}}),
+            });
+        });
+
+        await page.goto('http://localhost:5173/index.html');
+
+        const priceComponent = page.locator('bitcoin-price');
+        const compareComponent = page.locator('bitcoin-compare');
+        const guessUpButton = page.locator('bitcoin-guess #guess-up');
+
+        // 1. Wait for initial price and make a guess
+        await expect(priceComponent).toContainText('68000');
+        await guessUpButton.click();
+        await expect(compareComponent).toContainText('Initial Price: 68000');
+
+        // 2. Manually trigger a price refresh (simulating the 60s timer)
+        await priceComponent.dispatchEvent('refresh-btc-price');
+
+        // 3. Assert that the compare component now shows the new price
+        await expect(priceComponent).toContainText('72000'); // First, confirm the price component updated
+        await expect(compareComponent).toContainText('New Price: 72000');
+    });
 });

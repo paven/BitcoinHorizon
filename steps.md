@@ -55,9 +55,6 @@ Legend:
     - [x] Add visual feedback for not selected state
     - [x] Add visual feedback for none selected state
 
-
-
-
 - [ ] Players should be able to close their browser and return back to see their score and continue to make more guesses
   - [ ] Implement session storage
   - [ ] Add session recovery logic
