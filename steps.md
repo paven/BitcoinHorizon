@@ -22,6 +22,9 @@ Legend:
 
 # later
 
+- [ ] Show count down counter.
+- [ ] Refactor: merge guess and price, use js fetcher instead of calling the price component in other parts of code.
+
 - [ ] Implement user authentication and session persistence
   - [ ] Create authentication UI in auth-section
   - [ ] Implement authentication flow
