@@ -1,6 +1,12 @@
 import {test, expect} from '@playwright/test';
 
 test.describe('score-display', () => {
+    // Use addInitScript to clear localStorage on every page load for this context,
+    // guaranteeing a clean state before any page scripts run.
+    test.beforeEach(async ({context}) => {
+        await context.addInitScript(() => window.localStorage.clear());
+    })
+
     test('renders and shows an initial score of 0', async ({page}) => {
         await page.goto('http://localhost:5173/index.html');
 
