@@ -15,10 +15,10 @@ Legend:
 
 # Now
 
-- [>] Players should be able to close their browser and return back to see their score and continue to make more guesses
-  - [>] Add tests for session persistence
-  - [ ] Implement session storage for score
-  - [ ] Add session recovery logic for score
+- [>] Players should be able to close their browser and return to see their score and any active guess
+  - [x] Add tests for score session persistence
+  - [x] Implement session storage for score
+  - [>] Persist the user's active guess and the initial price
 
 # later
 

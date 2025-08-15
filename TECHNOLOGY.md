@@ -6,3 +6,4 @@
 * All code and static assets are placed in the `/web` subfolder, which is used as the GitHub Pages source. No compilation or build step is required.
 * Playwright (for automated UI testing)
 * Vite for local testing and development (optional, can be used for local testing of the static site)
+* Amazon DynamoDB (for backend state persistence)
