@@ -18,13 +18,16 @@ Legend:
 - [>] Players should be able to close their browser and return to see their score and any active guess
   - [x] Add tests for score session persistence
   - [x] Implement session storage for score
-  - [>] Persist the user's active guess and the initial price
-
+  - [>] Disable guess buttons until initial price is loaded
+  - [ ] Persist the user's active guess and the initial price
+    - [ ] Create a `Guess` store model to hold the active guess and initial price
+    
 # later
 
 - [ ] Show count down counter.
 - [ ] Refactor: merge guess and price, use js fetcher instead of calling the price component in other parts of code.
 - [ ] Refactor: Separate business logic from UI components (move towards Hexagonal Architecture).
+  - [ ] Extract application controller logic from `index.html` into a dedicated module.
 
 - [ ] Implement user authentication and session persistence
   - [ ] Create authentication UI in auth-section
