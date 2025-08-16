@@ -32,6 +32,15 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('updates when user clicks a guess button in bitcoin-guess', async ({page}) => {
+        // Mock the API route to ensure the guess buttons are enabled.
+        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({bitcoin: {usd: 68000}}),
+            });
+        });
+
         await page.goto('http://localhost:5173/index.html');
 
         const compare = page.locator('bitcoin-compare');
@@ -42,6 +51,7 @@ test.describe('bitcoin-compare', () => {
 
         // Click the button in the other component
         await expect(guessUpButton).toBeEnabled();
+
         await guessUpButton.click();
 
         // Assert the change in this component
@@ -82,7 +92,7 @@ test.describe('bitcoin-compare', () => {
         // Mock the API to return different prices on subsequent calls
         await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
             fetchCount++;
-            const price = fetchCount === 1 ? 68000 : 72000;
+            const price = fetchCount === 1 ? 68000 : 72000; // First call gets 68k, second gets 72k
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',

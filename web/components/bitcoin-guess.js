@@ -1,4 +1,5 @@
-import {html, define} from "hybrids";
+import {html, define, store} from "hybrids";
+import {LatestPrice} from '../lib/priceStore.js';
 
 function startWaiting(host) {
     host.isWaiting = true;
@@ -27,10 +28,13 @@ function makeGuess(host, guess) {
 
 export default define({
   tag: 'bitcoin-guess',
-    guess: null, // 'up' | 'down' | null
     isGuessActive: (host) => host.guess !== null,
-    isWaiting: false,
+    latestPrice: store(LatestPrice),
     render: function (host) {
+        const {isGuessActive, latestPrice} = host;
+        // `latestPrice.ok` is a computed boolean property from the store model.
+        const priceIsOk = store.ready(latestPrice) && latestPrice.ok;
+        const buttonsDisabled = isGuessActive || !priceIsOk;
       return html`
           <style>
               button.selected {
@@ -86,16 +90,16 @@ export default define({
                   100% { transform: rotate(360deg); }
               }
           </style>
-    <h2>Make Your Guess</h2>
+          <h2>Make Your Guess ${store.ready(latestPrice) ? latestPrice.price : '...'}</h2>
     <button id="guess-up" type="button"
             class="${host.guess === 'up' ? 'selected' : host.guess === null ? '' : 'disabled'}"
-            disabled="${host.guess ? 'disabled' : ''}"
+            disabled=${buttonsDisabled}
             onclick="${() => makeGuess(host, 'up')}"
-    >Up ${host.guess === 'up' ? '✅' : ''}
+    >Up${host.guess === 'up' ? '✅' : ''}
     </button>
     <button id="guess-down" type="button"
             class="${host.guess === 'down' ? 'selected' : host.guess === null ? '' : 'disabled'}"
-            disabled="${host.guess}"
+            disabled=${buttonsDisabled}
             onclick="${() => makeGuess(host, 'down')}"
     >Down ${host.guess === 'down' ? '✅' : ''}
     </button>
