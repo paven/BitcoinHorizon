@@ -1,43 +1,48 @@
 import { test, expect } from '@playwright/test';
 import nock from 'nock';
 import { fetchBTCPrice } from '../../web/lib/fetchBTCPrice.js';
+import {latestPriceStore} from '../../web/lib/priceStore.js';
 
 test.beforeEach(() => {
   nock.cleanAll();
+  // Reset the store to a default state before each test to ensure isolation.
+  latestPriceStore.price = undefined;
+  latestPriceStore.error = undefined;
 });
 
-test('fetchBTCPrice returns a valid BTC/USD price',  async() => {
+test('fetchBTCPrice returns a valid price object on success', async () => {
   nock('https://api.coingecko.com')
     .get('/api/v3/simple/price')
     .query({ ids: 'bitcoin', vs_currencies: 'usd' })
     .reply(200, { bitcoin: { usd: 65000 } });
 
-  var result2 = { price: null, error: null };
-  const result = await fetchBTCPrice(result2);
-  console.log('[fetchBTCPrice.spec.js] Fetched BTC result:', result);
-  expect(typeof result.price).toBe('number');
-  expect(isNaN(result.price)).toBe(false);
-  expect(result.price).toBeGreaterThan(0);
-  expect(result2).toBe(result);
+  const result = await fetchBTCPrice();
+
+  expect(result.price).toBe(65000);
+  expect(result.error).toBeNull();
 });
 
-test('fetchBTCPrice returns promise of a valid BTC/USD price 2',  async() => {
+test('fetchBTCPrice updates the store on success', async () => {
   nock('https://api.coingecko.com')
     .get('/api/v3/simple/price')
     .query({ ids: 'bitcoin', vs_currencies: 'usd' })
     .reply(200, { bitcoin: { usd: 65000 } });
 
-  var result2 = { price: null, error: null };
-  const result = await fetchBTCPrice(result2);
+  // Verify initial store state
+  expect(latestPriceStore.price).toBeUndefined();
 
-  expect(result2).toBe(result);
+  await fetchBTCPrice();
 
-  console.log('[fetchBTCPrice.spec.js] Fetched BTC result:', result2);
-  expect(typeof result2.price).toBe('number');
-  expect(isNaN(result2.price)).toBe(false);
-  expect(result2.price).toBeGreaterThan(0);
+  // Assert the store was updated
+  expect(latestPriceStore.price).toBe(65000);
+  expect(latestPriceStore.error).toBeNull();
+});
 
-  console.log('[fetchBTCPrice.spec.js] Fetched final BTC result:', result);
-  console.log('[fetchBTCPrice.spec.js] Fetched final BTC result2:', result2);
-  expect(result2).toBe(result);
+test('fetchBTCPrice updates the store with an error on failure', async () => {
+  nock('https://api.coingecko.com').get('/api/v3/simple/price').query(true).reply(500);
+
+  await fetchBTCPrice();
+
+  expect(latestPriceStore.price).toBeNull();
+  expect(latestPriceStore.error).toContain('HTTP error! status: 500');
 });

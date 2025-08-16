@@ -28,12 +28,3 @@ export const Game = {
         },
     },
 };
-
-/**
- * Defines an in-memory model for the current price.
- * This is used as a global cache to avoid race conditions and simplify component communication.
- */
-export const LatestPrice = {
-    price: undefined,
-    error: undefined,
-};

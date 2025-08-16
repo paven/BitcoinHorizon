@@ -19,7 +19,7 @@ Legend:
   - [x] Add tests for score session persistence
   - [x] Implement session storage for score
   - [>] Disable guess buttons until initial price is loaded
-    - [>] Save latest fetched price in a store.
+    - [x] Save latest fetched price in a store.
 
   - [ ] Persist the user's active guess and the initial price
     - [ ] Create a `Guess` store model to hold the active guess and initial price
