@@ -28,6 +28,8 @@ function makeGuess(host, guess) {
 
 export default define({
   tag: 'bitcoin-guess',
+    guess: null,
+    isWaiting: false,
     isGuessActive: (host) => host.guess !== null,
     latestPrice: store(LatestPrice),
     render: function (host) {
