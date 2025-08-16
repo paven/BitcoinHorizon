@@ -41,6 +41,7 @@ test.describe('bitcoin-compare', () => {
         await expect(compare).toContainText('Waiting for guess');
 
         // Click the button in the other component
+        await expect(guessUpButton).toBeEnabled();
         await guessUpButton.click();
 
         // Assert the change in this component
@@ -69,6 +70,7 @@ test.describe('bitcoin-compare', () => {
         expect(initialPrice).toBe(68000);
 
         // 2. Make a guess
+        await expect(guessUpButton).toBeEnabled();
         await guessUpButton.click();
 
         // 3. Assert that the compare component now shows the initial price
@@ -96,6 +98,7 @@ test.describe('bitcoin-compare', () => {
 
         // 1. Wait for initial price and make a guess
         await expect(priceComponent).toContainText('68000');
+        await expect(guessUpButton).toBeEnabled();
         await guessUpButton.click();
         await expect(compareComponent).toContainText('Initial Price: 68000');
 
@@ -126,6 +129,7 @@ test.describe('bitcoin-compare', () => {
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
 
         await expect(priceComponent).toContainText('68000');
+        await expect(guessUpButton).toBeEnabled();
         await guessUpButton.click();
 
         await priceComponent.dispatchEvent('refresh-btc-price');
@@ -152,6 +156,7 @@ test.describe('bitcoin-compare', () => {
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
 
         await expect(priceComponent).toContainText('68000');
+        await expect(guessUpButton).toBeEnabled();
         await guessUpButton.click();
 
         await priceComponent.dispatchEvent('refresh-btc-price');
@@ -168,6 +173,7 @@ test.describe('bitcoin-compare', () => {
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
         const guessDownButton = page.locator('bitcoin-guess #guess-down');
 
+        await expect(guessUpButton).toBeEnabled();
         await guessUpButton.click();
         await expect(guessUpButton).toBeDisabled();
 

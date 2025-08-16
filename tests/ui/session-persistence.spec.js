@@ -31,6 +31,8 @@ test.describe('Session Persistence', () => {
         await expect(priceComponent).toContainText('68000');
 
         // Make a correct guess
+        // Wait for the button to be enabled before clicking. This makes the test robust.
+        await expect(guessUpButton).toBeEnabled();
         await guessUpButton.click();
         await priceComponent.dispatchEvent('refresh-btc-price');
 

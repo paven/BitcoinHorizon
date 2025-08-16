@@ -95,7 +95,7 @@ export default define({
     </button>
     <button id="guess-down" type="button"
             class="${host.guess === 'down' ? 'selected' : host.guess === null ? '' : 'disabled'}"
-            disabled="${host.guess ? 'disabled' : ''}"
+            disabled="${host.guess}"
             onclick="${() => makeGuess(host, 'down')}"
     >Down ${host.guess === 'down' ? '✅' : ''}
     </button>

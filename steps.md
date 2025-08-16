@@ -19,15 +19,16 @@ Legend:
   - [x] Add tests for score session persistence
   - [x] Implement session storage for score
   - [>] Disable guess buttons until initial price is loaded
+
   - [ ] Persist the user's active guess and the initial price
     - [ ] Create a `Guess` store model to hold the active guess and initial price
-    
+
 # later
 
 - [ ] Show count down counter.
-- [ ] Refactor: merge guess and price, use js fetcher instead of calling the price component in other parts of code.
 - [ ] Refactor: Separate business logic from UI components (move towards Hexagonal Architecture).
   - [ ] Extract application controller logic from `index.html` into a dedicated module.
+  - [ ] Merge bitcoin-price and bitcoin guess.
 
 - [ ] Implement user authentication and session persistence
   - [ ] Create authentication UI in auth-section

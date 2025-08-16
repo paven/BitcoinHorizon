@@ -13,9 +13,10 @@ test('bitcoin-guess component renders and buttons exist', async ({ page }) => {
 
 test('shows visual feedback for selected guess', async ({page}) => {
   await page.goto('http://localhost:5173/index.html');
-  // Click the Up button and check for visual feedback
-  await page.click('#guess-up');
   const upButton = page.locator('#guess-up');
+    // Click the Up button and check for visual feedback
+    await expect(upButton).toBeEnabled();
+    await upButton.click();
   await expect(upButton).toHaveClass(/selected|active/); // Adjust class as implemented
   // The Down button should not have the selected/active class
   const downButton = page.locator('#guess-down');
@@ -26,7 +27,9 @@ test('shows visual feedback for selected guess', async ({page}) => {
 
 test('Down button shows disabled visual feedback when Up is chosen', async ({page}) => {
   await page.goto('http://localhost:5173/index.html');
-  await page.click('#guess-up');
+    const upButton = page.locator('#guess-up');
+    await expect(upButton).toBeEnabled();
+    await upButton.click();
   const downButton = page.locator('#guess-down');
   // Check that the Down button does NOT have the 'selected' class
   await expect(downButton).not.toHaveClass(/selected/);
@@ -38,7 +41,9 @@ test('Down button shows disabled visual feedback when Up is chosen', async ({pag
 
 test('guess buttons are disabled after a guess is made', async ({page}) => {
   await page.goto('http://localhost:5173/index.html');
-  await page.click('#guess-up');
+    const upButton = page.locator('#guess-up');
+    await expect(upButton).toBeEnabled();
+    await upButton.click();
   await expect(page.locator('#guess-up')).toBeDisabled();
   await expect(page.locator('#guess-down')).toBeDisabled();
 });
@@ -68,7 +73,9 @@ test('triggers a new price fetch after 60 seconds', async ({page}) => {
     expect(fetchCount).toBe(1);
 
     // 3. Make a guess to start the timer
-    await page.click('#guess-up');
+    const upButton = page.locator('#guess-up');
+    await expect(upButton).toBeEnabled();
+    await upButton.click();
 
     // 4. Fast-forward time by 60 seconds
     await page.clock.fastForward(60000);
@@ -80,7 +87,9 @@ test('triggers a new price fetch after 60 seconds', async ({page}) => {
 
 test('shows loading or waiting state for 60 seconds after guess before fetching new price', async ({page}) => {
   await page.goto('http://localhost:5173/index.html');
-  await page.click('#guess-up');
+    const upButton = page.locator('#guess-up');
+    await expect(upButton).toBeEnabled();
+    await upButton.click();
   // Immediately after guess, should show a waiting or loading state (not resolved)
   await expect(page.locator('#guess-message')).toContainText(/waiting|loading|pending|resolving/i);
   // (This will fail until the component implements a waiting state after a guess)
@@ -97,8 +106,10 @@ test('dispatches guess-made event when a guess is made', async ({page}) => {
       }, {once: true});
     });
   });
+    const upButton = page.locator('#guess-up');
   // Click the Up button to trigger the event
-  await page.click('#guess-up');
+    await expect(upButton).toBeEnabled();
+    await upButton.click();
   // Assert the event was dispatched with the correct detail
   const guess = await eventPromise;
   expect(guess).toBe('up');
@@ -116,8 +127,10 @@ test('parent node receives guess-made event when a guess is made', async ({page}
       }, {once: true});
     });
   });
+    const downButton = page.locator('#guess-down');
   // Click the Down button to trigger the event
-  await page.click('#guess-down');
+    await expect(downButton).toBeEnabled();
+    await downButton.click();
   // Assert the event was dispatched with the correct detail
   const guess = await eventPromise;
   expect(guess).toBe('down');
@@ -133,8 +146,10 @@ test('body receives guess-made event when a guess is made', async ({page}) => {
       }, {once: true});
     });
   });
+    const upButton = page.locator('#guess-up');
   // Click the Up button to trigger the event
-  await page.click('#guess-up');
+    await expect(upButton).toBeEnabled();
+    await upButton.click();
   // Assert the event was dispatched with the correct detail
   const guess = await eventPromise;
   expect(guess).toBe('up');
