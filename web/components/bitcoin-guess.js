@@ -1,4 +1,4 @@
-import { html, define } from "https://unpkg.com/hybrids@%5E9";
+import {html, define} from "hybrids";
 
 function startWaiting(host) {
     host.isWaiting = true;

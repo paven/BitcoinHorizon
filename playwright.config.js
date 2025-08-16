@@ -1,28 +1,25 @@
-console.log("Playwright config loaded");
-import {defineConfig} from '@playwright/test';
+import {defineConfig, devices} from '@playwright/test';
 
 export default defineConfig({
-    webServer: {
-        command: 'npx vite --port 5173',
-        url: 'http://localhost:5173',
-        reuseExistingServer: !process.env.CI,
-        timeout: 120 * 1000,
-        stderr: 'pipe',
+  testDir: './tests',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry',
+  },
+  projects: [
+    {
+      name: 'chromium',
+      use: {...devices['Desktop Chrome']},
     },
-    projects: [
-        {
-            name: 'ui',
-            testMatch: /tests\/ui\/.*\.spec\.js/,
-            use: {
-                baseURL: 'http://localhost:5173',
-                // ...other use options...
-            },
-        },
-        {
-            name: 'js',
-            testMatch: /tests\/js\/.*\.spec\.js/,
-            // No webServer for JS/unit tests
-        }
-    ],
-    // ...existing config...
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+  },
 });

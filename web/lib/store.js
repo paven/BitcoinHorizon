@@ -1,4 +1,4 @@
-import {store} from "https://unpkg.com/hybrids@^9";
+import {store} from "hybrids";
 
 /**
  * Defines the global application state model.

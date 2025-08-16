@@ -1,4 +1,4 @@
-import {html, define} from "https://unpkg.com/hybrids@^9";
+import {html, define} from "hybrids";
 
 export default define({
     tag: "bitcoin-compare",

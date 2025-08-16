@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BitcoinHorizon</title>
   <meta name="description" content="Guess if Bitcoin goes up or down!">
-  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <main>
@@ -34,7 +33,7 @@
   <script type="module" src="/components/score-display.js"></script>
   <!-- Import the global store and hybrids library -->
   <script type="module">
-    import {store} from "https://unpkg.com/hybrids@^9";
+    import {store} from "hybrids";
     import {Game} from "/lib/store.js";
 
     // Attach the event handler in the parent context

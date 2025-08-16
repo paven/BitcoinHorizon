@@ -1,9 +1,9 @@
 # Pure Javascript Technology Stack
 
 * Javascript
+* Vite (for development server and building)
 * hybrids.js
 * GitHub Pages (for static site hosting; Jekyll features will not be used)
-* All code and static assets are placed in the `/web` subfolder, which is used as the GitHub Pages source. No compilation or build step is required.
+* Source code is in the `/web` subfolder. The static site is built to the `/dist` folder for hosting.
 * Playwright (for automated UI testing)
-* Vite for local testing and development (optional, can be used for local testing of the static site)
 * Amazon DynamoDB (for backend state persistence)

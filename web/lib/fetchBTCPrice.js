@@ -6,8 +6,11 @@ function updateStore(result) {
     return result;
 }
 
-export function fetchBTCPrice(URL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd") {
-    return fetch(URL)
+export function fetchBTCPrice(
+    fetchFn,
+    URL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
+) {
+    return fetchFn(URL)
         .then(response => {
             if (!response.ok) {
                 // Handle HTTP errors like 404 or 500

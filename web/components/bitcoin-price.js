@@ -1,4 +1,4 @@
-import {html, define} from "https://unpkg.com/hybrids@^9";
+import {html, define} from "hybrids";
 import {fetchBTCPrice} from "../lib/fetchBTCPrice.js";
 
 console.log("[bitcoin-price] Script loaded, about to define component");
@@ -18,7 +18,7 @@ function dispatchPriceEvent(host) {
 
 // Helper to fetch and update price, used by both connect and refreshPrice.
 function updatePrice(host) {
-    return fetchBTCPrice().then((result) => {
+    return fetchBTCPrice(fetch).then((result) => {
         console.log('[bitcoin-price] fetchBTCPrice result', result);
         host.price = result;
         dispatchPriceEvent(host);

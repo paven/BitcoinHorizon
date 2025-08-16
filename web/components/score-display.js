@@ -1,4 +1,4 @@
-import {html, define, store} from "https://unpkg.com/hybrids@^9";
+import {html, define, store} from "hybrids";
 import {Game} from "../lib/store.js";
 
 export default define({
