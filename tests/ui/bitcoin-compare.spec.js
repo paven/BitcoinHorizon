@@ -1,8 +1,33 @@
-import {test, expect} from '@playwright/test';
+import {expect, test} from '@playwright/test';
+
+async function mockPrice(page, prices = [68000], fetchUrl = 'https://api.coingecko.com/api/v3/simple/price*', fetchCount = 0) {
+    const priceList = Array.isArray(prices) ? prices : [prices];
+
+    await page.route(fetchUrl, async (route) => {
+        const price = priceList[fetchCount] ?? priceList[priceList.length - 1];
+        fetchCount++;
+        await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({bitcoin: {usd: price}}),
+        });
+    });
+}
 
 test.describe('bitcoin-compare', () => {
-    test('shows "Waiting for guess" initially and guess is null or undefined', async ({page}) => {
+    test.beforeEach(async ({page}) => {
+        // Go to the page once for the test suite.
+        // Individual tests will handle clearing state, mocking, and reloading.
+        // Clear storage to ensure a clean state before applying mocks and reloading.
+        await mockPrice(page, [68000], 'https://api.coingecko.com/api/v3/simple/price*');
         await page.goto('http://localhost:5173/index.html');
+        await page.evaluate(() => window.localStorage.clear());
+        await page.goto('about:blank');
+
+    });
+    test('shows "Waiting for guess" initially and guess is null or undefined', async ({page}) => {
+        await page.goto('http://localhost:5173/index.html')
+
         // Ensure the component is present
         const compare = await page.locator('bitcoin-compare');
         await expect(compare).toBeVisible();
@@ -13,7 +38,8 @@ test.describe('bitcoin-compare', () => {
         expect(guess === undefined || guess === null).toBeTruthy();
     });
     test('updates guess when guess-made event is dispatched', async ({page}) => {
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/index.html')
+
         const compare = await page.locator('bitcoin-compare');
         // Dispatch the event from the bitcoin-guess element
         await page.evaluate(() => {
@@ -32,16 +58,7 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('updates when user clicks a guess button in bitcoin-guess', async ({page}) => {
-        // Mock the API route to ensure the guess buttons are enabled.
-        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({bitcoin: {usd: 68000}}),
-            });
-        });
-
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/index.html')
 
         const compare = page.locator('bitcoin-compare');
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
@@ -59,23 +76,14 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('receives and displays initial price when a guess is made', async ({page}) => {
-        // Mock the API route to ensure the test is reliable and not dependent on a live service.
-        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({bitcoin: {usd: 68000}}),
-            });
-        });
-
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/index.html')
 
         const priceComponent = page.locator('bitcoin-price');
         const compareComponent = page.locator('bitcoin-compare');
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
 
         // 1. Wait for the initial price to load and get its value
-        await expect(priceComponent.locator('strong')).toBeVisible({timeout: 10000});
+        await expect(priceComponent).toBeVisible({timeout: 10000});
         const initialPrice = await priceComponent.evaluate(el => el.price.price);
         expect(initialPrice).toBe(68000);
 
@@ -88,18 +96,7 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('receives and displays the new price after a refresh', async ({page}) => {
-        let fetchCount = 0;
-        // Mock the API to return different prices on subsequent calls
-        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
-            fetchCount++;
-            const price = fetchCount === 1 ? 68000 : 72000; // First call gets 68k, second gets 72k
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({bitcoin: {usd: price}}),
-            });
-        });
-
+        await mockPrice(page, [68000, 72000]);
         await page.goto('http://localhost:5173/index.html');
 
         const priceComponent = page.locator('bitcoin-price');
@@ -121,19 +118,8 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('shows "Correct" when price goes up and guess was "up"', async ({page}) => {
-        let fetchCount = 0;
-        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
-            fetchCount++;
-            const price = fetchCount === 1 ? 68000 : 72000;
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({bitcoin: {usd: price}}),
-            });
-        });
-
-        await page.goto('http://localhost:5173/index.html');
-
+        await mockPrice(page, [68000, 72000], 'https://api.coingecko.com/api/v3/simple/price*');
+        page.goto('http://localhost:5173/index.html')
         const priceComponent = page.locator('bitcoin-price');
         const compareComponent = page.locator('bitcoin-compare');
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
@@ -148,18 +134,8 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('shows "Incorrect" when price goes down and guess was "up"', async ({page}) => {
-        let fetchCount = 0;
-        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
-            fetchCount++;
-            const price = fetchCount === 1 ? 68000 : 65000; // Price goes down
-            await route.fulfill({
-                status: 200,
-                contentType: 'application/json',
-                body: JSON.stringify({bitcoin: {usd: price}}),
-            });
-        });
-
-        await page.goto('http://localhost:5173/index.html');
+        await mockPrice(page, [68000, 65000], 'https://api.coingecko.com/api/v3/simple/price*');
+        await page.goto('http://localhost:5173/index.html')
 
         const priceComponent = page.locator('bitcoin-price');
         const compareComponent = page.locator('bitcoin-compare');
@@ -175,10 +151,8 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('unlocks guess buttons after guess is resolved', async ({page}) => {
-        await page.route('https://api.coingecko.com/api/v3/simple/price*', async (route) => {
-            await route.fulfill({status: 200, body: JSON.stringify({bitcoin: {usd: 72000}})});
-        });
-        await page.goto('http://localhost:5173/index.html');
+        await mockPrice(page, [68000, 72000], 'https://api.coingecko.com/api/v3/simple/price*');
+        page.goto('http://localhost:5173/index.html')
 
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
         const guessDownButton = page.locator('bitcoin-guess #guess-down');

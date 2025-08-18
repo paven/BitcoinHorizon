@@ -18,11 +18,11 @@ Legend:
 - [>] Players should be able to close their browser and return to see their score and any active guess
   - [x] Add tests for score session persistence
   - [x] Implement session storage for score
-  - [>] Disable guess buttons until initial price is loaded
+  - [x] Disable guess buttons until initial price is loaded
     - [x] Save latest fetched price in a store.
-    - [ ] button never gets enabled if price can not be fetched.
+    - [x] button never gets enabled if price can not be fetched.
 
-  - [ ] Persist the user's active guess and the initial price
+  - [>] Persist the user's active guess and the initial price
     - [ ] Create a `Guess` store model to hold the active guess and initial price
 
 # later
