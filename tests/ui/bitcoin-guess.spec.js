@@ -171,5 +171,35 @@ test('triggers a new price fetch after 60 seconds', async ({page}) => {
             const guess = await eventPromise;
             expect(guess).toBe('up');
         });
+
+        test('guess-made event includes guess and initialPrice details', async ({page}) => {
+            // Listen for the event and capture the full event detail
+            const eventDetailPromise = page.evaluate(() => {
+                return new Promise(resolve => {
+                    document.body.addEventListener('guess-made', (event) => {
+                        resolve(event.detail);
+                    }, {once: true});
+                });
+            });
+
+            // Make sure the price is visible before clicking
+            await expect(page.locator('bitcoin-price')).toContainText('65000');
+
+            // Click the Down button to trigger the event
+            const downButton = page.locator('#guess-down');
+            await expect(downButton).toBeEnabled();
+            await downButton.click();
+
+            // Get the complete event detail
+            const eventDetail = await eventDetailPromise;
+
+            // Assert the event contains both guess and initialPrice
+            expect(eventDetail).toHaveProperty('guess');
+            expect(eventDetail.guess).toBe('down');
+
+            expect(eventDetail).toHaveProperty('initialPrice');
+            expect(typeof eventDetail.initialPrice).toBe('number');
+            expect(eventDetail.initialPrice).toBe(65000);
+        });
 });
 });

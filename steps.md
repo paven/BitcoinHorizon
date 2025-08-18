@@ -16,14 +16,23 @@ Legend:
 # Now
 
 - [>] Players should be able to close their browser and return to see their score and any active guess
-  - [x] Add tests for score session persistence
-  - [x] Implement session storage for score
-  - [x] Disable guess buttons until initial price is loaded
-    - [x] Save latest fetched price in a store.
-    - [x] button never gets enabled if price can not be fetched.
-
-  - [>] Persist the user's active guess and the initial price
-    - [ ] Create a `Guess` store model to hold the active guess and initial price
+  - [x] Persist score across browser sessions
+    - [x] Add tests for score session persistence
+    - [x] Implement session storage for score
+  - [x] Ensure guess buttons are only enabled when a price is available
+    - [x] Save latest fetched price in a store
+    - [x] Keep buttons disabled if price fetch fails
+  - [>] Allows a player to close their browser and return to an in-progress guess.
+    - [>] When a guess is made, the guess details (guess, initialPrice, timestamp) are sent with the event.
+      - [>] When a guess is made, the guess details (guess, initialPrice ) are sent with the event.
+    - [ ] When a guess is made, the guess details (guess, initialPrice, timestamp) are saved to `localStorage`.
+    - [ ] When the page loads, if a guess exists in `localStorage`, the `bitcoin-guess` component initializes with that
+      guess state.
+    - [ ] When the page loads, if a guess exists in `localStorage`, the `bitcoin-compare` component initializes with the
+      initial price from that guess.
+    - [ ] When the page loads, if a guess in `localStorage` is still within its 60-second waiting period, the timer
+      continues from where it left off.
+    - [ ] When a guess is resolved (e.g., after a price refresh), the guess is cleared from `localStorage`.
 
 # later
 

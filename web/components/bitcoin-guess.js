@@ -15,10 +15,16 @@ function startWaiting(host) {
 function makeGuess(host, guess) {
     if (!host.guess) {
         host.guess = guess;
-        // Emit guess-made event
-        console.log("Dispatching guess-made event", guess);
+        // Get current price from the store
+        const initialPrice = store.ready(host.latestPrice) ? host.latestPrice.price : null;
+
+        // Emit guess-made event with guess and initialPrice
+        console.log("Dispatching guess-made event", guess, initialPrice);
         host.dispatchEvent(new CustomEvent('guess-made', {
-            detail: {guess: guess},
+            detail: {
+                guess: guess,
+                initialPrice: initialPrice
+            },
             bubbles: true,
             composed: true
         }));
