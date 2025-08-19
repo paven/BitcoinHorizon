@@ -57,5 +57,37 @@ test.describe('Session Persistence', () => {
 
         // --- Assertion: Check if score is still 1 after reloading ---
         await expect(scoreDisplay).toContainText('Score: 1');
+        page.evaluate(() => console.log("localstorage keys at end", Object.keys(localStorage)));
+    });
+
+    //example of testing assumptions, delete
+    test.skip('can directly manipulate and read localStorage', async ({page}) => {
+        page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
+        await page.goto('http://localhost:5173/index.html');
+
+        // 1. Set an initial value in localStorage
+        await page.evaluate(() => {
+            console.log("expect no key", Object.keys(localStorage))
+            localStorage.setItem('my-debug-key', 'hello-world');
+            console.log("expect 1 key", Object.keys(localStorage))
+
+        });
+
+        // 2. Read it back and verify
+        const initialValue = await page.evaluate(() => {
+            return localStorage.getItem('my-debug-key');
+        });
+        expect(initialValue).toBe('hello-world');
+
+        // 3. Update the value
+        await page.evaluate(() => {
+            localStorage.setItem('my-debug-key', 'goodbye-world');
+        });
+
+        // 4. Read it back and verify the update
+        const updatedValue = await page.evaluate(() => {
+            return localStorage.getItem('my-debug-key');
+        });
+        expect(updatedValue).toBe('goodbye-world');
     });
 });

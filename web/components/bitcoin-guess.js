@@ -1,5 +1,6 @@
 import {html, define, store} from "hybrids";
 import {LatestPrice} from '../lib/priceStore.js';
+import {Guess} from '../lib/guessStore.js';
 
 function startWaiting(host) {
     host.isWaiting = true;
@@ -12,25 +13,21 @@ function startWaiting(host) {
     }, 60000); // 60 seconds
 }
 
-function makeGuess(host, guess) {
-    if (!host.guess) {
-        host.guess = guess;
-        // Get current price from the store
-        const initialPrice = store.ready(host.latestPrice) ? host.latestPrice.price : null;
-
-        // Emit guess-made event with guess and initialPrice
-        console.log("Dispatching guess-made event", guess, initialPrice);
-        host.dispatchEvent(new CustomEvent('guess-made', {
-            detail: {
-                guess: guess,
-                initialPrice: initialPrice,
-                timestamp: Date.now()
-            },
-            bubbles: true,
-            composed: true
-        }));
-        startWaiting(host);
-    }
+function makeGuess(host, guess, initialPrice) {
+    host.guess = guess;
+    //const initialPrice = store.ready(host.latestPrice) ? host.latestPrice.price : null;
+    let detail = {
+        guess: guess,
+        initialPrice: initialPrice,
+        timestamp: Date.now()
+    };
+    host.dispatchEvent(new CustomEvent('guess-made', {
+        detail: detail,
+        bubbles: true,
+        composed: true
+    }));
+    startWaiting(host);
+    store.set(Guess, detail);
 }
 
 export default define({
@@ -103,13 +100,13 @@ export default define({
     <button id="guess-up" type="button"
             class="${host.guess === 'up' ? 'selected' : host.guess === null ? '' : 'disabled'}"
             disabled=${buttonsDisabled}
-            onclick="${() => makeGuess(host, 'up')}"
+            onclick="${() => makeGuess(host, 'up', latestPrice.price)}"
     >Up${host.guess === 'up' ? '✅' : ''}
     </button>
     <button id="guess-down" type="button"
             class="${host.guess === 'down' ? 'selected' : host.guess === null ? '' : 'disabled'}"
             disabled=${buttonsDisabled}
-            onclick="${() => makeGuess(host, 'down')}"
+            onclick="${() => makeGuess(host, 'down', latestPrice.price)}"
     >Down ${host.guess === 'down' ? '✅' : ''}
     </button>
     <div id="guess-message">

@@ -26,7 +26,7 @@ Legend:
     - [>] When a guess is made, the guess details (guess, initialPrice, timestamp) are sent with the event.
       - [x] When a guess is made, the guess details (guess, initialPrice) are sent with the event.
       - [x] When a guess is made, the guess details (.., timestamp) are sent with the event.
-    - [ ] When a guess is made, the guess details (guess, initialPrice, timestamp) are saved to `localStorage`.
+    - [>] When a guess is made, the guess details (guess, initialPrice, timestamp) are saved to `localStorage`.
     - [ ] When the page loads, if a guess exists in `localStorage`, the `bitcoin-guess` component initializes with that
       guess state.
     - [ ] When the page loads, if a guess exists in `localStorage`, the `bitcoin-compare` component initializes with the

@@ -11,6 +11,7 @@ test.describe('bitcoin-guess component', () => {
             });
         });
         await page.goto('http://localhost:5173/index.html');
+        page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
     });
 
     const testCases = [
@@ -48,5 +49,38 @@ test.describe('bitcoin-guess component', () => {
         expect(detail).toHaveProperty('timestamp');
         expect(typeof detail.timestamp).toBe('number');
         expect(detail.timestamp).toBeGreaterThan(Date.now() - 5000); // Check if timestamp is recent
+    });
+
+    test('saves the guess to localStorage when a guess is made', async ({page}) => {
+        const guessUpButton = page.locator('#guess-up');
+
+        await expect(guessUpButton).toBeVisible();
+        await guessUpButton.click();
+        // 2. Wait for the asynchronous store update to write to localStorage.
+        await page.waitForFunction(() => {
+            const item = localStorage.getItem('bitcoin-horizon-guess');
+
+            if (!item) return false;
+            try {
+                // Check for a non-null guess property as a sign of successful write
+                return JSON.parse(item).guess === 'up';
+            } catch (e) {
+                return false;
+            }
+        });
+
+        // 3. Now that we know it's saved, retrieve and assert the full object
+        const storedGuess = await page.evaluate(() => {
+            console.log("expect  key", Object.keys(localStorage))
+            const item = localStorage.getItem('bitcoin-horizon-guess');
+
+            return JSON.parse(item);
+        });
+
+        // 4. Assert the stored data is correct
+        //expect(storedGuess).not.toBeNull();
+        expect(storedGuess.guess).toBe('up');
+        expect(typeof storedGuess.initialPrice).toBe('number'); // We can't check the exact price, but we can check the type
+        expect(typeof storedGuess.timestamp).toBe('number');
     });
 });
