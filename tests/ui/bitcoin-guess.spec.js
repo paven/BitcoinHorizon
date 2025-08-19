@@ -13,27 +13,22 @@ test.describe('bitcoin-guess component', () => {
         await page.goto('http://localhost:5173/index.html');
     });
 
-    test('clicking Up sets guess to up and isGuessActive true', async ({page}) => {
-        const guessEl = await page.locator('bitcoin-guess');
-        await expect(guessEl).toBeVisible();
-        await page.click('#guess-up');
-        // Evaluate the custom element's properties
-        const guess = await guessEl.evaluate(el => el.guess);
-        const isGuessActive = await guessEl.evaluate(el => el.isGuessActive);
-        expect(guess).toBe('up');
-        expect(isGuessActive).toBe(true);
-    });
+    const testCases = [
+        {buttonId: '#guess-up', expectedGuess: 'up'},
+        {buttonId: '#guess-down', expectedGuess: 'down'}
+    ];
 
-    test('clicking Down sets guess to down and isGuessActive true', async ({page}) => {
-        const guessEl = await page.locator('bitcoin-guess');
-        await expect(guessEl).toBeVisible();
-        await page.click('#guess-down');
-        // Evaluate the custom element's properties
-        const guess = await guessEl.evaluate(el => el.guess);
-        const isGuessActive = await guessEl.evaluate(el => el.isGuessActive);
-        expect(guess).toBe('down');
-        expect(isGuessActive).toBe(true);
-    });
+    for (const {buttonId, expectedGuess} of testCases) {
+        test(`clicking ${expectedGuess} sets guess to ${expectedGuess} and isGuessActive true`, async ({page}) => {
+            const guessEl = page.locator('bitcoin-guess');
+            await expect(guessEl).toBeVisible();
+            await page.click(buttonId);
+            const guess = await guessEl.evaluate(el => el.guess);
+            const isGuessActive = await guessEl.evaluate(el => el.isGuessActive);
+            expect(guess).toBe(expectedGuess);
+            expect(isGuessActive).toBe(true);
+        });
+    }
 
     test('dispatches guess-made event with timestamp when a guess is made', async ({page}) => {
         const guessUpButton = page.locator('#guess-up');
