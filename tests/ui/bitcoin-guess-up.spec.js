@@ -34,4 +34,24 @@ test.describe('bitcoin-guess button interactions', () => {
         expect(guess).toBe('down');
         expect(isGuessActive).toBe(true);
     });
+
+    test('dispatches guess-made event with timestamp when a guess is made', async ({page}) => {
+        const guessUpButton = page.locator('#guess-up');
+
+        // Listen for the 'guess-made' event and capture its detail
+        const guessMadeDetail = page.evaluate(() => {
+            return new Promise(resolve => {
+                document.addEventListener('guess-made', e => resolve(e.detail), {once: true});
+            });
+        });
+
+        // Click the button to trigger the event
+        await guessUpButton.click();
+
+        // Await the event detail and assert its contents
+        const detail = await guessMadeDetail;
+        expect(detail).toHaveProperty('timestamp');
+        expect(typeof detail.timestamp).toBe('number');
+        expect(detail.timestamp).toBeGreaterThan(Date.now() - 5000); // Check if timestamp is recent
+    });
 });

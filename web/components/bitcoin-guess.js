@@ -23,7 +23,8 @@ function makeGuess(host, guess) {
         host.dispatchEvent(new CustomEvent('guess-made', {
             detail: {
                 guess: guess,
-                initialPrice: initialPrice
+                initialPrice: initialPrice,
+                timestamp: Date.now()
             },
             bubbles: true,
             composed: true
