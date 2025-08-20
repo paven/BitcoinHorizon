@@ -13,6 +13,10 @@ test.describe('bitcoin-guess component', () => {
         });
         await page.goto('http://localhost:5173/index.html');
         page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
+        await page.evaluate(() => {
+            window.BITCOIN_GUESS_WAIT_MS = 5;
+        });
+
     });
 
     const testCases = [
@@ -137,4 +141,5 @@ test.describe('bitcoin-guess component', () => {
         await expect(guessDownButton).toBeDisabled();
         await expect(guessMessage).toContainText('Waiting for result...');
     });
+
 });

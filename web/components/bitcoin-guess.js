@@ -5,7 +5,7 @@ import {Guess} from '../lib/guessStore.js';
 window.testStore = store;
 window.testGuess = Guess;
 
-function startWaiting(host, timeout = 60000) {
+function startWaiting(host) {
     host.isWaiting = true;
     setTimeout(() => {
         host.isWaiting = false;
@@ -13,7 +13,7 @@ function startWaiting(host, timeout = 60000) {
         // The parent application will listen for this and trigger a new price fetch.
         console.log("Dispatching timer-expired event");
         host.dispatchEvent(new CustomEvent('timer-expired', {bubbles: true, composed: true}));
-    }, timeout);
+    }, 60000); // 60 seconds
 }
 
 function makeGuess(host, guess, initialPrice) {
@@ -26,6 +26,9 @@ function makeGuess(host, guess, initialPrice) {
 
     // Store the full guess object first
     store.set(Guess, detail);
+
+    // Update component property (this triggers a render)
+    //host.guess = guess;
 
     // Dispatch event for other components
     host.dispatchEvent(new CustomEvent('guess-made', {
@@ -41,18 +44,7 @@ function makeGuess(host, guess, initialPrice) {
 export default define({
   tag: 'bitcoin-guess',
     guess: (host) => host.guessStore.guess || "",
-    guessStore: store(Guess, {
-        observe: (host, value) => {
-            if (value.guess && value.timestamp > 0) {
-                const elapsedTime = Date.now() - value.timestamp;
-                const remainingTime = 60000 - elapsedTime;
-
-                if (remainingTime > 0) {
-                    startWaiting(host, remainingTime);
-                }
-            }
-        }
-    }),
+    guessStore: store(Guess),
     isWaiting: false,
     isGuessActive: (host) => host.guess !== "",
     latestPrice: store(LatestPrice),

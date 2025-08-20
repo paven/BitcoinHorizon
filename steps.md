@@ -36,14 +36,12 @@ Legend:
     - [ ] When a guess is resolved (e.g., after a price refresh), the guess is cleared from `localStorage`.
 
 # later
-
 - [ ] Persist user scores in a backend data store (preferably AWS)
   - [ ] Set up AWS infrastructure
   - [ ] Implement data storage logic
   - [ ] Add data retrieval functions
   - [ ] Write tests for data persistence
 
-- [ ] Make compleated guesses a list to keep as a leder for the scores
 - [ ] When recovering guesses, and time has passed, use historic BTC prices
 - [ ] Support more currencies.
 - [ ] Show count down counter.
