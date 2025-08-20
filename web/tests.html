@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BitcoinHorizon Test Page</title>
+    <title>Test Page</title>
+    <script type="module">
+        import {store} from 'hybrids';
+        import {Guess} from './lib/guessStore.js';
+
+        // Make these available globally for the test
+        window.testStore = store;
+        window.testGuess = Guess;
+        console.log("window: ", !!window.testStore, window.testGuess)
+    </script>
 </head>
 <body>
-  <section id="price-section"></section>
+<div>Test Page</div>
 </body>
 </html>
-

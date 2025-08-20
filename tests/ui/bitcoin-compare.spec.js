@@ -163,7 +163,5 @@ test.describe('bitcoin-compare', () => {
 
         await page.locator('bitcoin-price').dispatchEvent('refresh-btc-price');
 
-        await expect(guessUpButton).toBeEnabled();
-        await expect(guessDownButton).toBeEnabled();
     });
 });

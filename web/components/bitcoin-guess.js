@@ -2,7 +2,10 @@ import {html, define, store} from "hybrids";
 import {LatestPrice} from '../lib/priceStore.js';
 import {Guess} from '../lib/guessStore.js';
 
-function startWaiting(host) {
+window.testStore = store;
+window.testGuess = Guess;
+
+function startWaiting(host, timeout = 60000) {
     host.isWaiting = true;
     setTimeout(() => {
         host.isWaiting = false;
@@ -10,31 +13,48 @@ function startWaiting(host) {
         // The parent application will listen for this and trigger a new price fetch.
         console.log("Dispatching timer-expired event");
         host.dispatchEvent(new CustomEvent('timer-expired', {bubbles: true, composed: true}));
-    }, 60000); // 60 seconds
+    }, timeout);
 }
 
 function makeGuess(host, guess, initialPrice) {
-    host.guess = guess;
-    //const initialPrice = store.ready(host.latestPrice) ? host.latestPrice.price : null;
+    // Create the full guess detail
     let detail = {
         guess: guess,
         initialPrice: initialPrice,
         timestamp: Date.now()
     };
+
+    // Store the full guess object first
+    store.set(Guess, detail);
+
+    // Dispatch event for other components
     host.dispatchEvent(new CustomEvent('guess-made', {
         detail: detail,
         bubbles: true,
         composed: true
     }));
+
+    // Start waiting for the result
     startWaiting(host);
-    store.set(Guess, detail);
 }
 
 export default define({
   tag: 'bitcoin-guess',
-    guess: null,
+    guess: (host) => host.guessStore.guess || "",
+    guessStore: store(Guess, {
+        observe: (host, value) => {
+            if (value.guess && value.timestamp > 0) {
+                const elapsedTime = Date.now() - value.timestamp;
+                const remainingTime = 60000 - elapsedTime;
+
+                if (remainingTime > 0) {
+                    startWaiting(host, remainingTime);
+                }
+            }
+        }
+    }),
     isWaiting: false,
-    isGuessActive: (host) => host.guess !== null,
+    isGuessActive: (host) => host.guess !== "",
     latestPrice: store(LatestPrice),
     render: function (host) {
         const {isGuessActive, latestPrice} = host;

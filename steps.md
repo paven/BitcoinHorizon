@@ -26,8 +26,8 @@ Legend:
     - [>] When a guess is made, the guess details (guess, initialPrice, timestamp) are sent with the event.
       - [x] When a guess is made, the guess details (guess, initialPrice) are sent with the event.
       - [x] When a guess is made, the guess details (.., timestamp) are sent with the event.
-    - [>] When a guess is made, the guess details (guess, initialPrice, timestamp) are saved to `localStorage`.
-    - [ ] When the page loads, if a guess exists in `localStorage`, the `bitcoin-guess` component initializes with that
+    - [x] When a guess is made, the guess details (guess, initialPrice, timestamp) are saved to `localStorage`.
+    - [>] When the page loads, if a guess exists in `localStorage`, the `bitcoin-guess` component initializes with that
       guess state.
     - [ ] When the page loads, if a guess exists in `localStorage`, the `bitcoin-compare` component initializes with the
       initial price from that guess.
@@ -37,6 +37,15 @@ Legend:
 
 # later
 
+- [ ] Persist user scores in a backend data store (preferably AWS)
+  - [ ] Set up AWS infrastructure
+  - [ ] Implement data storage logic
+  - [ ] Add data retrieval functions
+  - [ ] Write tests for data persistence
+
+- [ ] Make compleated guesses a list to keep as a leder for the scores
+- [ ] When recovering guesses, and time has passed, use historic BTC prices
+- [ ] Support more currencies.
 - [ ] Show count down counter.
 - [ ] Refactor: Separate business logic from UI components (move towards Hexagonal Architecture).
   - [ ] Extract application controller logic from `index.html` into a dedicated module.
@@ -48,21 +57,10 @@ Legend:
   - [ ] Add session management
   - [ ] Write tests for auth flow
 
-- [ ] Persist user scores in a backend data store (preferably AWS)
-  - [ ] Set up AWS infrastructure
-  - [ ] Implement data storage logic
-  - [ ] Add data retrieval functions
-  - [ ] Write tests for data persistence
 
 - [ ] Add a favicon to the app for better branding and browser tab visibility
   - [ ] Create favicon asset
   - [ ] Add favicon links to HTML
-
-- [ ] Prepare deployment and add instructions to the README
-  - [ ] Write deployment documentation
-  - [ ] Add setup instructions
-  - [ ] Document testing procedures
-  - [ ] Include usage guidelines
 
 # Done
 
