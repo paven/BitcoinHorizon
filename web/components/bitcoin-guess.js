@@ -9,7 +9,7 @@ export default define({
   tag: 'bitcoin-guess',
     guess: (host) => host.guessStore.guess,
     guessStore: store(Guess),
-    isWaiting: false,
+    isWaiting: (host) => host.guessStore.isWaiting,
     isGuessActive: (host) => host.guess !== "",
     latestPrice: store(LatestPrice),
     render: function (host) {

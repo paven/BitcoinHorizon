@@ -10,12 +10,11 @@ export const Guess = {
     initialPrice: -1,
     timestamp: -1,
     ok: (guess, initialPrice, timestamp) => guess !== "" && initialPrice > 0 && timestamp > 0,
+    isWaiting: false,
 
     [store.connect]: {
-        // Reads from localStorage to restore the session. Returns null if nothing is stored.
         get: (id) => JSON.parse(localStorage.getItem('bitcoin-horizon-guess')) ||
             {guess: "", initialPrice: -1, timestamp: -1},
-        // Writes the current state to localStorage.
         set: (id, values) => {
             localStorage.setItem('bitcoin-horizon-guess', JSON.stringify(values));
             return values;
@@ -27,15 +26,15 @@ function remainingTime(timeout = getTimeout()) {
     return timeout - (Date.now() - Store.get(Guess).timestamp);
 }
 
-
 function getTimeout() {
     return 60000;
 }
 
 function startWaiting(host, timeout = getTimeout()) {
-    host.isWaiting = true;
+    store.set(Guess, {isWaiting: true});
+
     setTimeout(() => {
-        host.isWaiting = false;
+        store.set(Guess, {isWaiting: false});
         // Signal that the 60-second wait is over.
         // The parent application will listen for this and trigger a new price fetch.
         console.log("Dispatching timer-expired event");
@@ -53,9 +52,6 @@ export function makeGuess(host, guess, initialPrice) {
 
     // Store the full guess object first
     store.set(Guess, detail);
-
-    // Update component property (this triggers a render)
-    //host.guess = guess;
 
     // Dispatch event for other components
     host.dispatchEvent(new CustomEvent('guess-made', {
