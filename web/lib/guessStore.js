@@ -22,3 +22,48 @@ export const Guess = {
         },
     },
 };
+
+function remainingTime(timeout = getTimeout()) {
+    return timeout - (Date.now() - Store.get(Guess).timestamp);
+}
+
+
+function getTimeout() {
+    return 60000;
+}
+
+function startWaiting(host, timeout = getTimeout()) {
+    host.isWaiting = true;
+    setTimeout(() => {
+        host.isWaiting = false;
+        // Signal that the 60-second wait is over.
+        // The parent application will listen for this and trigger a new price fetch.
+        console.log("Dispatching timer-expired event");
+        host.dispatchEvent(new CustomEvent('timer-expired', {bubbles: true, composed: true}));
+    }, remainingTime(timeout)); // 60 seconds
+}
+
+export function makeGuess(host, guess, initialPrice) {
+    // Create the full guess detail
+    let detail = {
+        guess: guess,
+        initialPrice: initialPrice,
+        timestamp: Date.now()
+    };
+
+    // Store the full guess object first
+    store.set(Guess, detail);
+
+    // Update component property (this triggers a render)
+    //host.guess = guess;
+
+    // Dispatch event for other components
+    host.dispatchEvent(new CustomEvent('guess-made', {
+        detail: detail,
+        bubbles: true,
+        composed: true
+    }));
+
+    // Start waiting for the result
+    startWaiting(host);
+}

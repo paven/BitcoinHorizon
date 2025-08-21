@@ -1,49 +1,13 @@
-import {html, define, store} from "hybrids";
+import {define, html, store} from "hybrids";
 import {LatestPrice} from '../lib/priceStore.js';
-import {Guess} from '../lib/guessStore.js';
+import {Guess, makeGuess} from '../lib/guessStore.js';
 
 window.testStore = store;
 window.testGuess = Guess;
 
-function startWaiting(host) {
-    host.isWaiting = true;
-    setTimeout(() => {
-        host.isWaiting = false;
-        // Signal that the 60-second wait is over.
-        // The parent application will listen for this and trigger a new price fetch.
-        console.log("Dispatching timer-expired event");
-        host.dispatchEvent(new CustomEvent('timer-expired', {bubbles: true, composed: true}));
-    }, 60000); // 60 seconds
-}
-
-function makeGuess(host, guess, initialPrice) {
-    // Create the full guess detail
-    let detail = {
-        guess: guess,
-        initialPrice: initialPrice,
-        timestamp: Date.now()
-    };
-
-    // Store the full guess object first
-    store.set(Guess, detail);
-
-    // Update component property (this triggers a render)
-    //host.guess = guess;
-
-    // Dispatch event for other components
-    host.dispatchEvent(new CustomEvent('guess-made', {
-        detail: detail,
-        bubbles: true,
-        composed: true
-    }));
-
-    // Start waiting for the result
-    startWaiting(host);
-}
-
 export default define({
   tag: 'bitcoin-guess',
-    guess: (host) => host.guessStore.guess || "",
+    guess: (host) => host.guessStore.guess,
     guessStore: store(Guess),
     isWaiting: false,
     isGuessActive: (host) => host.guess !== "",
@@ -63,7 +27,7 @@ export default define({
                   transition: background 0.2s, box-shadow 0.2s;
               }
 
-              button.disabled {
+              button[disabled]:not(.selected) {
                   background: #f8f8f8;
                   border: 2px dashed #bbb;
                   color: #bbb;
@@ -74,7 +38,7 @@ export default define({
                   transition: background 0.2s, box-shadow 0.2s, color 0.2s, border 0.2s;
               }
 
-              button:not(.selected):not(.disabled) {
+              button:not([disabled]) {
                   background: #fff;
                   border: 2px solid #2d8cf0;
                   color: #2d8cf0;
@@ -86,7 +50,7 @@ export default define({
                   transition: background 0.2s, box-shadow 0.2s, color 0.2s, border 0.2s;
               }
 
-              button:not(.disabled):hover {
+              button:not([disabled]):hover {
                   background: #e0e0e0;
                   border-color: #888;
                   color: #333;
@@ -110,22 +74,21 @@ export default define({
           </style>
           <h2>Make Your Guess ${store.ready(latestPrice) ? latestPrice.price : '...'}</h2>
     <button id="guess-up" type="button"
-            class="${host.guess === 'up' ? 'selected' : host.guess === null ? '' : 'disabled'}"
+            class="${host.guess === 'up' ? 'selected' : ''}"
             disabled=${buttonsDisabled}
             onclick="${() => makeGuess(host, 'up', latestPrice.price)}"
     >Up${host.guess === 'up' ? '✅' : ''}
     </button>
     <button id="guess-down" type="button"
-            class="${host.guess === 'down' ? 'selected' : host.guess === null ? '' : 'disabled'}"
+            class="${host.guess === 'down' ? 'selected' : ''}"
             disabled=${buttonsDisabled}
             onclick="${() => makeGuess(host, 'down', latestPrice.price)}"
     >Down ${host.guess === 'down' ? '✅' : ''}
     </button>
     <div id="guess-message">
       ${host.guess ? (
-          host.isWaiting
-              ? html`<span>Waiting for result... <span class="loader"></span></span>`
-              : html`You selected: <b>${host.guess.toUpperCase()}</b> ${host.guess === 'up' ? '🚀' : '📉'}`
+              html`You selected: <b>${host.guess.toUpperCase()}</b> ${host.guess === 'up' ? '🚀' : '📉'}` +
+              host.isWaiting && html`<span>Waiting for result... <span class="loader"></span></span>`
       ) : 'No guess selected.'}
     </div>
   `;
