@@ -5,8 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:debug": "DEBUG=vite:* vite",
+    "dev:debug-hmr": "DEBUG=vite:hmr vite",
+    "dev:debug-deps": "DEBUG=vite:deps vite",
+    "dev:debug-force": "DEBUG=vite:* vite --force",
     "build": "vite build",
+    "build:debug": "DEBUG=vite:* vite build",
+    "build:debug-force": "DEBUG=vite:* vite build --force",
     "preview": "vite preview",
+    "preview:debug": "DEBUG=vite:* vite preview",
     "test": "playwright test",
     "prepare": "husky"
   },

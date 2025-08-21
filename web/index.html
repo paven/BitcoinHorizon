@@ -68,6 +68,12 @@
       }
       guessEl.guess = null;
     });
+
+    // Listen for the guess to be expired and reset the guess component
+    document.body.addEventListener('guess-expired', () => {
+      console.log('[index.html] guess-expired received, resetting guess component.');
+      guessEl.guess = null;
+    });
   </script>
 </body>
 </html>

@@ -1,5 +1,4 @@
 import {test, expect} from '@playwright/test';
-import {store} from "hybrids";
 
 test.describe('bitcoin-guess component', () => {
     test.beforeEach(async ({page}) => {
@@ -95,19 +94,20 @@ test.describe('bitcoin-guess component', () => {
         // First navigate to the app page but set a special localStorage value
         await page.goto('http://localhost:5173/index.html');
 
+        const test_timestamp = Date.now() - 1000
         // Clear any existing data and set up our test guess directly
-        await page.evaluate(() => {
+        const localStorageGuess = await page.evaluate(test_timestamp => {
             localStorage.clear();
             localStorage.setItem('bitcoin-horizon-guess', JSON.stringify({
                 guess: 'up',
                 initialPrice: 68000,
-                timestamp: 1755682641231
+                timestamp: test_timestamp,
             }));
-
-            // Force a hard reload to ensure the page reads from localStorage
             window.location.reload(true);
-        });
+            return localStorage.getItem('bitcoin-horizon-guess');
+        }, test_timestamp);
 
+        console.log("localStorageGuess: ", localStorageGuess);
         // Wait for the page to reload and the component to be ready
         await page.waitForLoadState('networkidle');
 
@@ -119,20 +119,13 @@ test.describe('bitcoin-guess component', () => {
 
         // Manually force the waiting state since this is a test scenario
         await guessComponent.evaluate(component => {
-            // Set waiting state since we're simulating a guess in progress
-            component.isWaiting = true;
-        });
-
-        // Force the waiting state for the test
-        await guessComponent.evaluate(component => {
-            // Set waiting state since we're simulating a guess in progress
             component.isWaiting = true;
         });
 
         // Verify the guess property was correctly restored
         await expect(guessComponent).toHaveJSProperty('guessStore.guess', 'up');
         await expect(guessComponent).toHaveJSProperty('guessStore.initialPrice', 68000);
-        await expect(guessComponent).toHaveJSProperty('guessStore.timestamp', 1755682641231);
+        await expect(guessComponent).toHaveJSProperty('guessStore.timestamp', test_timestamp);
         await expect(guessComponent).toHaveJSProperty('guess', 'up');
 
         // Verify UI reflects the restored stat
