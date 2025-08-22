@@ -1,3 +1,61 @@
+## Running the Project Locally
+
+### Prerequisites
+
+- Node.js (latest LTS version recommended)
+- npm (comes with Node.js)
+
+### Installation
+
+```bash
+ npm install
+```
+
+### Available Scripts
+
+#### Development
+
+```bash 
+npm run dev
+```
+
+Starts the development server using Vite. Access the application at `http://localhost:5173`.
+
+#### Testing
+
+```
+bash npm run test
+``` 
+
+Runs Playwright tests in Chromium browser.
+
+#### Building
+
+```
+bash npm run build
+``` 
+
+Creates a production build in the `dist` directory.
+
+#### Preview
+
+```
+bash npm run preview
+``` 
+
+Previews the production build locally.
+
+### Project Structure
+
+- `/web` - Source code directory
+- `/tests` - Test files directory
+- `/dist` - Production build output (generated after build)
+
+### Configuration Files
+
+- `vite.config.js` - Vite build configuration
+- `playwright.config.js` - Playwright test configuration
+
 # BitcoinHorizon - Vite Debug Instructions
 
 This document provides instructions on how to run Vite with debug mode enabled for the BitcoinHorizon project.
@@ -133,3 +191,4 @@ npm run dev:debug > vite-debug.log 2>&1
 ```
 
 This will save all debug output to a file named `vite-debug.log` that you can examine later.
+

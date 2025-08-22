@@ -23,7 +23,6 @@ export const Guess = {
     ok: getOk(),
     isWaiting: false,
 
-
     [hybridStore.connect]: {
         get: (id) => JSON.parse(localStorage.getItem('bitcoin-horizon-guess')) ||
             {guess: "", initialPrice: -1, timestamp: -1}, ok: false, isWaiting: false,
@@ -35,8 +34,9 @@ export const Guess = {
     },
 };
 
+
 function remainingTime(timeout = getTimeout()) {
-    return timeout - (Date.now() - store.get(Guess).timestamp);
+    return Math.max(timeout - (Date.now() - store.get(Guess).timestamp), 0);
 }
 
 function getTimeout() {
@@ -45,15 +45,16 @@ function getTimeout() {
 
 function startWaiting(host, timeout = getTimeout()) {
     store.set(Guess, {isWaiting: true});
-    console.log("Waiting for result, dispatching timer-expired event");
+    console.log("Waiting for result, starting count down");
 
-    setTimeout(() => {
+    var timer = setTimeout(() => {
         store.set(Guess, {isWaiting: false});
         // Signal that the 60-second wait is over.
         // The parent application will listen for this and trigger a new price fetch.
         console.log("Dispatching timer-expired event");
         host.dispatchEvent(new CustomEvent('timer-expired', {bubbles: true, composed: true}));
     }, remainingTime(timeout)); // 60 seconds
+    console.log("Waiting for result, timer started", timer, remainingTime(timeout));
 }
 
 export function checkStoredGuess(host) {
