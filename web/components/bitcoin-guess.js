@@ -8,7 +8,7 @@ window.testGuess = Guess;
 export default define({
   tag: 'bitcoin-guess',
   guess: {
-    value: (host) => store.get(Guess).guess,
+    value: () => store.get(Guess).guess,
     connect: (host, key, invalidate) => {
       // Check if there's a stored guess and start waiting if needed
       console.log("bitcoin-guess connected, checking for stored guess");
@@ -20,19 +20,40 @@ export default define({
       console.log("bitcoin-guess guess changed, render", value, lastValue);
     },
   },
-    guessStore: store(Guess),
-    isWaiting: (host) => host.guessStore.isWaiting,
+  //guessStore: store(Guess),
+  isWaiting: store(Guess, 'isWaiting'),
     isGuessActive: (host) => host.guess !== "",
     latestPrice: store(LatestPrice),
-  render: function (host, guess = host.guess) {
+  render: function (host,) {
+    const {isGuessActive, latestPrice, guess} = host;
     console.log("[bitcoin-guess] render", guess);
 
-    const {isGuessActive, latestPrice} = host;
-        // `latestPrice.ok` is a computed boolean property from the store model.
+    // `latestPrice.ok` is a computed boolean property from the store model.
         const priceIsOk = store.ready(latestPrice) && latestPrice.ok;
         const buttonsDisabled = isGuessActive || !priceIsOk;
       return html`
-          <style>
+
+        <h2>Make Your Guess ${store.ready(latestPrice) ? latestPrice.price : '...'}</h2>
+        <button id="guess-up" type="button"
+                class="${guess === 'up' ? 'selected' : ''}"
+                disabled=${buttonsDisabled}
+                onclick="${() => makeGuess(host, 'up', latestPrice.price)}"
+        >Up${guess === 'up' ? '✅' : ''}
+        </button>
+        <button id="guess-down" type="button"
+                class="${host.guess === 'down' ? 'selected' : ''}"
+                disabled=${buttonsDisabled}
+                onclick="${() => makeGuess(host, 'down', latestPrice.price)}"
+        >Down ${guess === 'down' ? '✅' : ''}
+        </button>
+        <div id="guess-message">
+          ${guess ? (
+              html`You selected: <b>${guess.toUpperCase()}</b> ${host.guess === 'up' ? '🚀' : '📉'}` +
+              host.isWaiting && html`<span>Waiting for result... <span class="loader"></span></span>`
+          ) : 'No guess selected.'}
+        </div>
+
+        <style>
               button.selected {
                   background: #e0ffe0;
                   border: 2px solid #2ecc40;
@@ -82,29 +103,14 @@ export default define({
               }
 
               @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
+                0% {
+                  transform: rotate(0deg);
+                }
+                100% {
+                  transform: rotate(360deg);
+                }
               }
           </style>
-          <h2>Make Your Guess ${store.ready(latestPrice) ? latestPrice.price : '...'}</h2>
-    <button id="guess-up" type="button"
-            class="${guess === 'up' ? 'selected' : ''}"
-            disabled=${buttonsDisabled}
-            onclick="${() => makeGuess(host, 'up', latestPrice.price)}"
-    >Up${guess === 'up' ? '✅' : ''}
-    </button>
-    <button id="guess-down" type="button"
-            class="${host.guess === 'down' ? 'selected' : ''}"
-            disabled=${buttonsDisabled}
-            onclick="${() => makeGuess(host, 'down', latestPrice.price)}"
-    >Down ${guess === 'down' ? '✅' : ''}
-    </button>
-    <div id="guess-message">
-      ${guess ? (
-          html`You selected: <b>${guess.toUpperCase()}</b> ${host.guess === 'up' ? '🚀' : '📉'}` +
-              host.isWaiting && html`<span>Waiting for result... <span class="loader"></span></span>`
-      ) : 'No guess selected.'}
-    </div>
-  `;
+      `;
   },
 });

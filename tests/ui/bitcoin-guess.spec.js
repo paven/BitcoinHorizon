@@ -45,7 +45,7 @@ test.describe('bitcoin-guess component', () => {
             });
         });
 
-        // Click the button to trigger the event
+        await expect(guessUpButton).toBeVisible();
         await guessUpButton.click();
 
         // Await the event detail and assert its contents
@@ -123,9 +123,6 @@ test.describe('bitcoin-guess component', () => {
         });
 
         // Verify the guess property was correctly restored
-        await expect(guessComponent).toHaveJSProperty('guessStore.guess', 'up');
-        await expect(guessComponent).toHaveJSProperty('guessStore.initialPrice', 68000);
-        await expect(guessComponent).toHaveJSProperty('guessStore.timestamp', test_timestamp);
         await expect(guessComponent).toHaveJSProperty('guess', 'up');
 
         // Verify UI reflects the restored stat

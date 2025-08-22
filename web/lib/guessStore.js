@@ -23,6 +23,7 @@ export const Guess = {
     ok: getOk(),
     isWaiting: false,
 
+
     [hybridStore.connect]: {
         get: (id) => JSON.parse(localStorage.getItem('bitcoin-horizon-guess')) ||
             {guess: "", initialPrice: -1, timestamp: -1}, ok: false, isWaiting: false,
@@ -30,6 +31,7 @@ export const Guess = {
             localStorage.setItem('bitcoin-horizon-guess', JSON.stringify(values));
             return values;
         },
+        cache: false,
     },
 };
 
@@ -76,7 +78,6 @@ export function checkStoredGuess(host) {
                 bubbles: true,
                 composed: true
             }));
-
             startWaiting(host, getTimeout());
         } else {
             store.set(Guess, {
