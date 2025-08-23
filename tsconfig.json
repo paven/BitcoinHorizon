@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    /* Base Options: Recommended for modern projects */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    /* Strictness: Enable all strict type-checking options */
+    "strict": true,
+    /* Module Resolution: For modern bundlers like Vite */
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    /* Vite-specific: Let Vite handle transpilation and bundling */
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "noEmit": true
+  },
+  /* Files to include in the TypeScript project */
+  "include": [
+    "web/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
