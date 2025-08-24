@@ -1,42 +1,82 @@
 import {test, expect} from '@playwright/test';
 import {isPriceValid, BTCPrice, store, refreshPrice} from '../../web/lib/btcPriceStore';
+import type {IBTCPriceData} from '../../web/lib/btcPriceStore';
 import type {Model} from 'hybrids';
 
 test.describe('btcPriceStore', () => {
+    // First create localStorage mock instance
+    let localStorageMock: LocalStorageMock;
+
+    test.beforeEach(() => {
+        // The 'global' object in Node.js is like 'window' in the browser.
+        // First create the mock instance
+        localStorageMock = new LocalStorageMock();
+
+        // Then assign it to global.localStorage
+        if (typeof window === 'undefined') {
+            (global as any).localStorage = localStorageMock;
+        }
+
+        // Only clear the store AFTER localStorage is properly set up
+        store.clear(BTCPrice, true); // true ensures complete clear
+    });
+
+    test.afterEach(() => {
+        // Ensure consistent cleanup after each test
+        if (typeof window === 'undefined' && localStorageMock) {
+            localStorageMock.clear();
+        }
+        store.clear(BTCPrice, true);
+    });
+
 
     test.describe('isPriceValid()', () => {
         test('should return true for a valid, recent price', () => {
-            const price = {
+            const price: IBTCPriceData = {
                 price: 50000,
                 timestamp: Date.now(),
                 error: '',
+                errorLog: [],
             };
             expect(isPriceValid(price)).toBe(true);
         });
 
         test('should return false for a price of 0', () => {
-            const price = {
+            const price: IBTCPriceData = {
                 price: 0,
                 timestamp: Date.now(),
                 error: '',
+                errorLog: [],
             };
             expect(isPriceValid(price)).toBe(false);
         });
 
         test('should return false if there is an error string', () => {
-            const price = {
+            const price: IBTCPriceData = {
                 price: 50000,
                 timestamp: Date.now(),
                 error: 'An error occurred',
+                errorLog: [],
             };
             expect(isPriceValid(price)).toBe(false);
         });
 
         test('should return false for a stale price (older than 60 seconds)', () => {
-            const price = {
+            const price: IBTCPriceData = {
                 price: 50000,
                 timestamp: Date.now() - 61 * 1000, // 61 seconds old
                 error: '',
+                errorLog: [],
+            };
+            expect(isPriceValid(price)).toBe(false);
+        });
+
+        test('should return false if errorLog is not empty', () => {
+            const price: IBTCPriceData = {
+                price: 50000,
+                timestamp: Date.now(),
+                error: '',
+                errorLog: [{price: 0, timestamp: Date.now(), error: 'Previous fetch failed'}],
             };
             expect(isPriceValid(price)).toBe(false);
         });
@@ -66,11 +106,7 @@ test.describe('btcPriceStore', () => {
         }
     }
 
-// The 'global' object in Node.js is like 'window' in the browser.
-// We only define this mock if we are in a Node environment.
-    if (typeof window === 'undefined') {
-        (global as any).localStorage = new LocalStorageMock();
-    }
+
 
     /**
      * The hybrids store.get() method resolves immediately with a proxy object
@@ -94,15 +130,6 @@ test.describe('btcPriceStore', () => {
     }
 
     test.describe('BTCPrice Store Data Fetching in Node.js', () => {
-        const originalFetch = global.fetch;
-
-        test.afterEach(() => {
-            global.fetch = originalFetch;
-            store.clear(BTCPrice);
-            if (typeof window === 'undefined') {
-                (global as any).localStorage.clear();
-            }
-        });
 
         test('should fetch and return a valid price on API success', async () => {
             const mockPrice = 55000.42;
@@ -120,12 +147,45 @@ test.describe('btcPriceStore', () => {
             expect(priceData.timestamp).toBeGreaterThan(Date.now() - 5000);
         });
 
-        test('should return an error state on API failure (non-200 response)', async () => {
+        test('should return an error state on API failure when no prior data exists', async () => {
             global.fetch = async () => new Response('Not Found', {status: 404});
             const priceData = await waitForStoreToSettle(BTCPrice);
 
             expect(priceData.price).toBe(0);
             expect(priceData.error).toBe('HTTP error! status: 404');
+            expect(priceData.errorLog).toHaveLength(0);
+        });
+
+        test('should keep prior data and log error on subsequent API failure', async () => {
+            const mockPrice = 55000.42;
+            const mockSuccessResponse = {bitcoin: {usd: mockPrice}};
+            let fetchCallCount = 0;
+
+            // Mock fetch to succeed first, then fail
+            global.fetch = async () => {
+                fetchCallCount++;
+                if (fetchCallCount === 1) {
+                    return new Response(JSON.stringify(mockSuccessResponse), {
+                        status: 200,
+                        headers: {'Content-Type': 'application/json'}
+                    });
+                } else {
+                    return new Response('Server Down', {status: 500});
+                }
+            };
+
+            // 1. First call - success
+            const initialPriceData = await waitForStoreToSettle(BTCPrice) as IBTCPriceData;
+            expect(initialPriceData.price).toBe(mockPrice);
+
+            // 2. Invalidate cache and trigger second call - failure
+            store.clear(BTCPrice, false); // Invalidate cache
+            const subsequentPriceData = await waitForStoreToSettle(BTCPrice) as IBTCPriceData;
+
+            expect(subsequentPriceData.price).toBe(mockPrice); // Price is preserved
+            expect(subsequentPriceData.error).toBe('HTTP error! status: 500'); // New error is set
+            expect(subsequentPriceData.errorLog).toHaveLength(1); // Error is logged
+            expect(subsequentPriceData.errorLog[0].error).toBe('HTTP error! status: 500');
         });
 
         test('should return an error state on network error (fetch throws)', async () => {
@@ -152,7 +212,6 @@ test.describe('btcPriceStore', () => {
     });
 
     test.describe('BTCPrice Store Caching in Node.js', () => {
-        const originalFetch = global.fetch;
         let fetchCallCount = 0;
 
         test.beforeEach(() => {
@@ -169,13 +228,6 @@ test.describe('btcPriceStore', () => {
             };
         });
 
-        test.afterEach(() => {
-            global.fetch = originalFetch;
-            store.clear(BTCPrice);
-            if (typeof window === 'undefined') {
-                (global as any).localStorage.clear();
-            }
-        });
 
         test('should use cache for subsequent calls within the cache duration', async () => {
             await waitForStoreToSettle(BTCPrice);
