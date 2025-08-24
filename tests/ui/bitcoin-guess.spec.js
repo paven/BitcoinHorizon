@@ -10,7 +10,7 @@ test.describe('bitcoin-guess component', () => {
                 body: JSON.stringify({bitcoin: {usd: 68000}}),
             });
         });
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
         page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
         await page.evaluate(() => {
             window.BITCOIN_GUESS_WAIT_MS = 5;
@@ -92,7 +92,7 @@ test.describe('bitcoin-guess component', () => {
 
         // --- Direct setup approach with a localStorage preset ---
         // First navigate to the app page but set a special localStorage value
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
 
         const test_timestamp = Date.now() - 1000
         // Clear any existing data and set up our test guess directly

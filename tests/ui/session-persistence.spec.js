@@ -18,7 +18,7 @@ test.describe('Session Persistence', () => {
         // To ensure a clean slate, navigate to the page, clear localStorage,
         // and then reload. This ensures the test starts with a known empty state
         // and the mock API is active.
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
         await page.evaluate(() => window.localStorage.clear());
         await page.reload();
 
@@ -63,7 +63,7 @@ test.describe('Session Persistence', () => {
     //example of testing assumptions, delete
     test.skip('can directly manipulate and read localStorage', async ({page}) => {
         page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
 
         // 1. Set an initial value in localStorage
         await page.evaluate(() => {

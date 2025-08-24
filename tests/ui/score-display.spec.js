@@ -8,7 +8,7 @@ test.describe('score-display', () => {
     })
 
     test('renders and shows an initial score of 0', async ({page}) => {
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
 
         const scoreDisplay = page.locator('score-display');
         await expect(scoreDisplay).toBeVisible();
@@ -27,7 +27,7 @@ test.describe('score-display', () => {
             });
         });
 
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
 
         const scoreDisplay = page.locator('score-display');
         const priceComponent = page.locator('bitcoin-price');
@@ -56,7 +56,7 @@ test.describe('score-display', () => {
             });
         });
 
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
 
         await page.locator('bitcoin-guess #guess-up').click();
         await page.locator('bitcoin-price').dispatchEvent('refresh-btc-price');

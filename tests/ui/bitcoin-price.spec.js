@@ -14,7 +14,7 @@ const mockBTCPriceRoute = async (page) => {
 test('bitcoin-price component fetches and displays BTC/USD price', async ({ page }) => {
   console.log('[test] Starting bitcoin-price component test');
   await mockBTCPriceRoute(page);
-  await page.goto('http://localhost:5173/index.html');
+  await page.goto('http://localhost:5173/old.html');
   // Wait for the component to render and fetch the price
   const priceLocator = page.locator('bitcoin-price');
   await expect(priceLocator).toBeVisible();

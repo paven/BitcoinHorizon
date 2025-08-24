@@ -20,13 +20,13 @@ test.describe('bitcoin-compare', () => {
         // Individual tests will handle clearing state, mocking, and reloading.
         // Clear storage to ensure a clean state before applying mocks and reloading.
         await mockPrice(page, [68000], 'https://api.coingecko.com/api/v3/simple/price*');
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
         await page.evaluate(() => window.localStorage.clear());
         await page.goto('about:blank');
 
     });
     test('shows "Waiting for guess" initially and guess is null or undefined', async ({page}) => {
-        await page.goto('http://localhost:5173/index.html')
+        await page.goto('http://localhost:5173/old.html')
 
         // Ensure the component is present
         const compare = await page.locator('bitcoin-compare');
@@ -38,7 +38,7 @@ test.describe('bitcoin-compare', () => {
         expect(guess === undefined || guess === null).toBeTruthy();
     });
     test('updates guess when guess-made event is dispatched', async ({page}) => {
-        await page.goto('http://localhost:5173/index.html')
+        await page.goto('http://localhost:5173/old.html')
 
         const compare = await page.locator('bitcoin-compare');
         // Dispatch the event from the bitcoin-guess element
@@ -58,7 +58,7 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('updates when user clicks a guess button in bitcoin-guess', async ({page}) => {
-        await page.goto('http://localhost:5173/index.html')
+        await page.goto('http://localhost:5173/old.html')
 
         const compare = page.locator('bitcoin-compare');
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
@@ -76,7 +76,7 @@ test.describe('bitcoin-compare', () => {
     });
 
     test('receives and displays initial price when a guess is made', async ({page}) => {
-        await page.goto('http://localhost:5173/index.html')
+        await page.goto('http://localhost:5173/old.html')
 
         const priceComponent = page.locator('bitcoin-price');
         const compareComponent = page.locator('bitcoin-compare');
@@ -97,7 +97,7 @@ test.describe('bitcoin-compare', () => {
 
     test('receives and displays the new price after a refresh', async ({page}) => {
         await mockPrice(page, [68000, 72000]);
-        await page.goto('http://localhost:5173/index.html');
+        await page.goto('http://localhost:5173/old.html');
 
         const priceComponent = page.locator('bitcoin-price');
         const compareComponent = page.locator('bitcoin-compare');
@@ -119,7 +119,7 @@ test.describe('bitcoin-compare', () => {
 
     test('shows "Correct" when price goes up and guess was "up"', async ({page}) => {
         await mockPrice(page, [68000, 72000], 'https://api.coingecko.com/api/v3/simple/price*');
-        page.goto('http://localhost:5173/index.html')
+        await page.goto('http://localhost:5173/old.html')
         const priceComponent = page.locator('bitcoin-price');
         const compareComponent = page.locator('bitcoin-compare');
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
@@ -135,7 +135,7 @@ test.describe('bitcoin-compare', () => {
 
     test('shows "Incorrect" when price goes down and guess was "up"', async ({page}) => {
         await mockPrice(page, [68000, 65000], 'https://api.coingecko.com/api/v3/simple/price*');
-        await page.goto('http://localhost:5173/index.html')
+        await page.goto('http://localhost:5173/old.html')
 
         const priceComponent = page.locator('bitcoin-price');
         const compareComponent = page.locator('bitcoin-compare');
@@ -152,7 +152,7 @@ test.describe('bitcoin-compare', () => {
 
     test('unlocks guess buttons after guess is resolved', async ({page}) => {
         await mockPrice(page, [68000, 72000], 'https://api.coingecko.com/api/v3/simple/price*');
-        page.goto('http://localhost:5173/index.html')
+        await page.goto('http://localhost:5173/old.html')
 
         const guessUpButton = page.locator('bitcoin-guess #guess-up');
         const guessDownButton = page.locator('bitcoin-guess #guess-down');
