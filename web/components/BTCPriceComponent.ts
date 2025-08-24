@@ -1,7 +1,7 @@
 import {define, html, store} from 'hybrids';
 // `btcPriceStore` exports a value and a type both named `BTCPrice`.
 // We import the value as `BTCPriceModel` and the type as `IBTCPriceData` for clarity.
-import {BTCPrice} from '../../web/lib/btcPriceStore';
+import {BTCPrice} from '../lib/btcPriceStore';
 
 export interface BTCPriceComponent {
     price: BTCPrice;
