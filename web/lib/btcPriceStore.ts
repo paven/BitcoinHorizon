@@ -8,7 +8,7 @@ interface CoinGeckoResponse {
 }
 
 // Interface for our price model
-interface BTCPrice {
+interface IBTCPriceData {
     id?: string;        // Optional as this is a singleton
     price: number;
     timestamp: number;
@@ -19,7 +19,7 @@ interface BTCPrice {
 const API_URL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
 
 // Create the model
-export const BTCPrice: Model<BTCPrice> = {
+export const BTCPrice: Model<IBTCPriceData> = {
     // Default values
     price: 0,
     timestamp: 0,
@@ -56,20 +56,21 @@ export const BTCPrice: Model<BTCPrice> = {
         cache: 10000,
 
         // Enable offline support
-        offline: true
+        //offline: true,
     }
 };
 
 // Helper function to check if price data is valid
-export const isPriceValid = (price: BTCPrice): boolean => {
+export const isPriceValid = (price: IBTCPriceData): boolean => {
     return price.price > 0 && !price.error &&
         (Date.now() - price.timestamp) < 60000; // Price is less than 60 seconds old
 };
 
 // Helper function to get fresh price data
-export const refreshPrice = async (): Promise<BTCPrice> => {
+export const refreshPrice = async (): Promise<IBTCPriceData> => {
     store.clear(BTCPrice, false); // Clear the cache but keep the value
     return store.get(BTCPrice);   // Fetch fresh data
 };
 
+export {store};
 export default BTCPrice;
