@@ -22,12 +22,13 @@ Enabler: tech stack
 - [x] typescript
   - [x]update [Technology](TECHNOLOGY.md)
 - [ ] add documentations of TECHNOLOGY to /TECHNOLOGY
+  - [x] (hybrids.js stor)[TECHNOLOGY/hybrids.js/store]
 
 # Feature: Bitcoin Price Display
 
 - [>] "The player can at all times see their latest available BTC price in USD"
   - [>] Create a hybrids js store that fetches a price
-    - [>] "BTC price data from any available 3rd party API
+    - [x] "BTC price data from any available 3rd party API"
     - [ ] mockFetch flag to not use API tokens during testing
 
 # Feature: Score Management
@@ -39,9 +40,10 @@ Enabler: tech stack
 
 # Feature: Making Price Predictions
 
-- [ ] "The player can choose to enter a guess of either 'up' or 'down'"
+- [>] "The player can choose to enter a guess of either 'up' or 'down'"
 - [ ] "Players can only make one guess at a time"
 - [ ] "After a guess is entered, the player cannot make new guesses until the existing guess is resolved"
+- [ ] Persist active guesses on the server to prevent client-side manipulation
 
 # Feature: Prediction Resolution
 
