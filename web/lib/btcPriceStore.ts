@@ -15,7 +15,7 @@ interface IErrorLogEntry {
 }
 
 // Interface for our price model
-export interface IBTCPriceData {
+export interface BTCPrice {
     id?: string;
     price: number;
     timestamp: number;
@@ -26,7 +26,7 @@ export interface IBTCPriceData {
 // URL for the CoinGecko API
 const API_URL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
 
-const ErrorLogEntry: Model<IErrorLogEntry> = {
+const ErrorLogEntry: IErrorLogEntry = {
     price: 0,
     timestamp: 0,
     error: "",
@@ -34,7 +34,7 @@ const ErrorLogEntry: Model<IErrorLogEntry> = {
 
 // This will hold the last known state of the model. It's moved to the module scope
 // to avoid `this` context issues within the store's `observe` method.
-let lastModel: IBTCPriceData | null = null;
+let lastModel: BTCPrice | null = null;
 
 /**
  * Resets the module-level `lastModel` variable.
@@ -45,7 +45,7 @@ export function _resetLastModelForTests() {
 }
 
 // Create the model
-export const BTCPrice: Model<IBTCPriceData> = {
+export const BTCPrice: Model<BTCPrice> = {
     // Default values
     price: -1,
     timestamp: -1,
@@ -115,13 +115,13 @@ export const BTCPrice: Model<IBTCPriceData> = {
 };
 
 // Helper function to check if price data is valid
-export const isPriceValid = (price: IBTCPriceData): boolean => {
+export const isPriceValid = (price: BTCPrice): boolean => {
     return price.price > 0 && price.error == "" &&
         (Date.now() - price.timestamp) < 60000; // Price is less than 60 seconds old
 };
 
 // Helper function to get fresh price data
-export const refreshPrice = async (): Promise<IBTCPriceData> => {
+export const refreshPrice = async (): Promise<BTCPrice> => {
     store.clear(BTCPrice, false); // Clear the cache but keep the value
     return store.get(BTCPrice);   // Fetch fresh data
 };

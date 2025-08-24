@@ -1,5 +1,4 @@
 import {expect, test} from '@playwright/test';
-import type {IBTCPriceData} from '../../web/lib/btcPriceStore';
 import {BTCPrice, isPriceValid, refreshPrice, store} from '../../web/lib/btcPriceStore';
 import type {Model} from 'hybrids';
 
@@ -33,28 +32,28 @@ test.describe('btcPriceStore', () => {
 
     test.describe('isPriceValid()', () => {
         test('should return true for a valid, recent price', () => {
-            const price: IBTCPriceData = {
+            const price: BTCPrice = {
                 price: 50000, timestamp: Date.now(), error: '', errorLog: [],
             };
             expect(isPriceValid(price)).toBe(true);
         });
 
         test('should return false for a price of 0', () => {
-            const price: IBTCPriceData = {
+            const price: BTCPrice = {
                 price: 0, timestamp: Date.now(), error: '', errorLog: [],
             };
             expect(isPriceValid(price)).toBe(false);
         });
 
         test('should return false if there is an error string', () => {
-            const price: IBTCPriceData = {
+            const price: BTCPrice = {
                 price: 50000, timestamp: Date.now(), error: 'An error occurred', errorLog: [],
             };
             expect(isPriceValid(price)).toBe(false);
         });
 
         test('should return false for a stale price (older than 60 seconds)', () => {
-            const price: IBTCPriceData = {
+            const price: BTCPrice = {
                 price: 50000, timestamp: Date.now() - 61 * 1000, // 61 seconds old
                 error: '', errorLog: [],
             };
@@ -148,12 +147,12 @@ test.describe('btcPriceStore', () => {
                 };
 
                 // 1. First call - success
-                const initialPriceData = await waitForStoreToSettle(BTCPrice) as IBTCPriceData;
+                const initialPriceData = await waitForStoreToSettle(BTCPrice) as BTCPrice;
                 expect(initialPriceData.price).toBe(mockPrice);
 
                 // 2. Invalidate cache and trigger second call - failure
                 store.clear(BTCPrice, false); // Invalidate cache
-                const subsequentPriceData = await waitForStoreToSettle(BTCPrice) as IBTCPriceData;
+                const subsequentPriceData = await waitForStoreToSettle(BTCPrice) as BTCPrice;
 
                 expect(subsequentPriceData.price).toBe(mockPrice); // Price is preserved
                 expect(subsequentPriceData.error).toBe('HTTP error! status: 500'); // New error is set
