@@ -1,4 +1,4 @@
-import {store, Model} from "hybrids";
+import {store, Model, define, html} from "hybrids";
 
 // Interface for the API response
 interface CoinGeckoResponse {
@@ -15,7 +15,7 @@ interface IErrorLogEntry {
 }
 
 // Interface for our price model
-interface IBTCPriceData {
+export interface IBTCPriceData {
     id?: string;
     price: number;
     timestamp: number;
@@ -36,35 +36,26 @@ const ErrorLogEntry: Model<IErrorLogEntry> = {
 // to avoid `this` context issues within the store's `observe` method.
 let lastModel: IBTCPriceData | null = null;
 
+/**
+ * Resets the module-level `lastModel` variable.
+ * This is intended for use in testing environments to ensure test isolation.
+ */
+export function _resetLastModelForTests() {
+    lastModel = null;
+}
+
 // Create the model
 export const BTCPrice: Model<IBTCPriceData> = {
     // Default values
-    price: 0,
-    timestamp: 0,
+    price: -1,
+    timestamp: -1,
     error: "",
     errorLog: [ErrorLogEntry],
 
     // Connect to external data source
     [store.connect]: {
         get: async function () {
-            try {
-                const response = await fetch(API_URL);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data: CoinGeckoResponse = await response.json();
-
-                return {
-                    price: data.bitcoin.usd,
-                    timestamp: Date.now(),
-                    error: "",
-                    errorLog: [], // On success, we reset the error log
-                };
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-
+            function errorPrice(errorMessage: string) {
                 if (lastModel && isPriceValid(lastModel)) {
                     const newErrorEntry = {
                         price: 0,
@@ -87,6 +78,28 @@ export const BTCPrice: Model<IBTCPriceData> = {
                     };
                 }
             }
+
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    return errorPrice(`HTTP error! status: ${response.status}`);
+                }
+
+                const data: CoinGeckoResponse = await response.json();
+
+                return {
+                    price: data.bitcoin.usd,
+                    timestamp: Date.now(),
+                    error: "",
+                    errorLog: [], // On success, we reset the error log
+                };
+            } catch (err) {
+                console.log("err ", err);
+
+                const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+
+                return errorPrice(errorMessage);
+            }
         },
 
         observe: function (id, model) {
@@ -103,7 +116,7 @@ export const BTCPrice: Model<IBTCPriceData> = {
 
 // Helper function to check if price data is valid
 export const isPriceValid = (price: IBTCPriceData): boolean => {
-    return price.price > 0 && !price.error && !price.errorLog.length &&
+    return price.price > 0 && price.error == "" &&
         (Date.now() - price.timestamp) < 60000; // Price is less than 60 seconds old
 };
 
@@ -113,5 +126,6 @@ export const refreshPrice = async (): Promise<IBTCPriceData> => {
     return store.get(BTCPrice);   // Fetch fresh data
 };
 
-export {store};
+export {store, define, html};
+export type {Model}
 export default BTCPrice;
