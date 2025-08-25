@@ -3,17 +3,17 @@ import {define, html, store} from 'hybrids';
 // We import the value as `BTCPriceModel` and the type as `IBTCPriceData` for clarity.
 import {BTCPrice} from '../lib/btcPriceStore';
 
-export interface BTCPriceComponent {
+export interface PriceComponent {
     price: BTCPrice;
 }
 
-export default define<BTCPriceComponent>({
+export default define<PriceComponent>({
     tag: "btc-price",
     price: store(BTCPrice),
     // The render function must handle the `null` case for `price`.
     render: ({price}) => html`
         <div class="btc-price">
-            <strong>BTC Price:</strong> ${price ? `$${price.price}` : 'Loading...'}
+            <strong>BTC Price:</strong> ${store.ready(price) ? `$${price.price}` : 'Loading...'}
         </div>
     `,
 });
