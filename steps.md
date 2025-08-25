@@ -26,17 +26,17 @@ Enabler: tech stack
 
 # Feature: Bitcoin Price Display
 
-- [>] "The player can at all times see their latest available BTC price in USD"
+- [x] "The player can at all times see their latest available BTC price in USD"
   - [x] Create a hybrids js store that fetches a price
     - [x] "BTC price data from any available 3rd party API"
     - [/] mockFetch flag to not use API tokens during testing
 
 # Feature: Score Management
 
-- [ ] "New players start with a score of 0"
-- [ ] "The player can at all times see their current score"
-- [ ] "Players should be able to close their browser and return back to see their score"
-- [ ] "The score of each player should be persisted in a backend data store (AWS services preferred)"
+- [x] "New players start with a score of 0"
+- [x] "The player can at all times see their current score"
+- [x] "Players should be able to close their browser and return back to see their score"
+- [x] "The score of each player should be persisted in a backend data store (AWS services preferred)"
 
 # Feature: Making Price Predictions
 
@@ -52,8 +52,8 @@ Enabler: tech stack
   score"
 - [/] "If the guess is incorrect, the user loses 1 point"
 - [/] "The guesses should be resolved fairly using BTC price data from any available 3rd party API"
-- [ ] Implement guess-evaluator module
-- [ ] Write tests for guess-evaluator
+- [x] Implement guess-evaluator module
+- [x] Write tests for guess-evaluator
 
 # Feature: Project Deliverables
 
