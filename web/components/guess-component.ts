@@ -1,6 +1,5 @@
-import {define, html, store} from 'hybrids';
-import {guessStore, Guess} from '../lib/btcGuessStore';
-import {BTCPrice} from '../lib/btcPriceStore';
+import {define, html, store, BTCPrice} from '../lib/btcPriceStore';
+import {Guess} from '../lib/btcGuessStore';
 
 export interface GuessComponent {
     playerId: string;
@@ -8,44 +7,49 @@ export interface GuessComponent {
     disabled: boolean;
 }
 
-function createGuess(direction: 'up' | 'down', playerId: string, initialPrice: number): Guess {
+function createGuess(direction: 'up' | 'down', playerId: string, initialPrice: number): Omit<Guess, 'id'> {
     return {
-        id: `${playerId}-${Date.now()}`,
         direction,
         status: 'new',
-        outcome: null,
+        outcome: 'pending',
         initialPrice,
         initialTimestamp: Date.now(),
         playerId,
     };
 }
 
-function makeGuess(host: GuessComponent, direction: 'up' | 'down') {
+async function makeGuess(host: GuessComponent, direction: 'up' | 'down') {
     if (host.disabled) return;
-    const guess = createGuess(direction, host.playerId, host.price.price);
-    guessStore.addGuess(guess);
+    const guessPayload = createGuess(direction, host.playerId, host.price.price);
+    await store.set(Guess, guessPayload); // Await the async set
     host.disabled = true;
+    // Expose all guesses for test/debug after set resolves
+    if (typeof window !== "undefined") {
+        // @ts-ignore
+        window.__guesses__ = store.get([Guess]);
+    }
 }
 
 export default define<GuessComponent>({
     tag: 'guess-component',
     playerId: '',
     price: store(BTCPrice),
-    disabled: false,
+    disabled: {
+        value: false,
+        observe(host: GuessComponent & HTMLElement, value: boolean, lastValue: boolean) {
+            console.log('disabled changed', value, lastValue);
+        }
+    },
     render: ({price, disabled}) => html`
         <div>
-            ${store.pending(price) && html`
-                <div>Loading price...</div>
-            `}
-            ${store.error(price) && html`
-                <div class="error">Could not load price. Please try again later.</div>
-            `}
-            ${store.ready(price) && !store.error(price) && html`
-                <button disabled="${disabled}" onclick="${host => makeGuess(host, 'up')}">Up</button>
-                <button disabled="${disabled}" onclick="${host => makeGuess(host, 'down')}">Down</button>
+            ${store.ready(price) ? html`
+                <button id="guess-up" disabled=${disabled} onclick="${host => makeGuess(host, 'up')}">Up</button>
+                <button id="guess-down" disabled=${disabled} onclick="${host => makeGuess(host, 'down')}">Down</button>
                 ${!disabled ? html`
                     <div>No guess made yet. Please make a guess.</div>
                 ` : ''}
+            ` : html`
+                <div>Loading price...</div>
             `}
         </div>
     `,

@@ -37,7 +37,10 @@ test('bitcoin-price component dispatches btc-price-updated event with price', as
   await mockBTCPriceRoute(page);
   await page.goto('http://localhost:5173/tests.html');
   await page.setContent('<section id="price-section"></section>');
-
+  console.log(
+      '[test] bitcoin-price component test: page content:',
+      await page.content(),
+  )
   // Dynamically load the component script and wait for it to be defined
   await page.addScriptTag({ type: 'module', url: 'http://localhost:5173/components/bitcoin-price.js' });
   await page.waitForFunction(() => customElements.get('bitcoin-price'));

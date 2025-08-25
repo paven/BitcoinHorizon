@@ -1,10 +1,12 @@
-import {store} from 'hybrids';
+import {Model} from 'hybrids';
 
+// In-memory enumerable model for guesses.
+// See: https://hybrids.js.org/store/model
 export interface Guess {
     id: string;
     direction: 'up' | 'down';
     status: 'new' | 'pending' | 'resolved';
-    outcome: 'correct' | 'incorrect' | null;
+    outcome: 'correct' | 'incorrect' | 'pending'; // changed from null to 'pending'
     initialPrice: number;
     initialTimestamp: number;
     resolutionPrice?: number;
@@ -12,29 +14,16 @@ export interface Guess {
     playerId: string;
 }
 
-export interface GuessStoreState {
-    guesses: Guess[];
-}
-
-export const BtcGuessStore = {
-    guesses: [],
-    addGuess(guess: Guess) {
-        this.guesses = [...this.guesses, guess];
-    },
-    getGuessesByPlayer(playerId: string): Guess[] {
-        return this.guesses.filter(g => g.playerId === playerId);
-    },
-    getAllGuesses(): Guess[] {
-        return [...this.guesses];
-    },
-    updateGuess(id: string, update: Partial<Guess>) {
-        this.guesses = this.guesses.map(g =>
-            g.id === id ? {...g, ...update} : g
-        );
-    },
-    getGuessById(id: string): Guess | undefined {
-        return this.guesses.find(g => g.id === id);
-    }
+// This model is in-memory only. To persist or fetch from an API, add [store.connect].
+export const Guess: Model<Guess> = {
+    id: true, // enumerable model
+    direction: 'up',
+    status: 'new',
+    outcome: 'pending', // changed from function/null to string default
+    initialPrice: 0,
+    initialTimestamp: 0,
+    playerId: '',
+    // resolutionPrice and resolutionTimestamp are optional and not included in the model definition,
+    // so they will be undefined unless set by store.set().
+    // To persist or fetch, add [store.connect]: { ... }
 };
-
-export const guessStore = store(BtcGuessStore);

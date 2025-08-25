@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guess Component Test</title>
+    <script type="module" src="/components/guess-component.ts"></script>
+    <script type="module" src="/lib/btcPriceStore.ts"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2em;
+        }
+
+        guess-component {
+            display: block;
+            margin-top: 2em;
+        }
+    </style>
+</head>
+<body>
+<h1>Guess Component Manual Test</h1>
+<div>
+    <label>
+        Player ID:
+        <input id="playerIdInput" value="manual-test-player"/>
+    </label>
+    <button id="setPlayerIdBtn">Set Player ID</button>
+</div>
+<guess-component id="guessComp"></guess-component>
+<script type="module">
+    const guessComp = document.getElementById('guessComp');
+    const playerIdInput = document.getElementById('playerIdInput');
+    document.getElementById('setPlayerIdBtn').onclick = () => {
+        guessComp.playerId = playerIdInput.value;
+    };
+    // Set initial playerId
+    guessComp.playerId = playerIdInput.value;
+</script>
+</body>
+</html>
+
