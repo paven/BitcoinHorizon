@@ -1,5 +1,5 @@
 import {define, html, store, BTCPrice} from '../lib/btcPriceStore';
-import {Guess} from '../lib/btcGuessStore';
+import {Guess, hasActiveGuesses} from '../lib/btcGuessStore';
 
 export interface GuessComponent {
     playerId: string;
@@ -34,12 +34,7 @@ export default define<GuessComponent>({
     tag: 'guess-component',
     playerId: '',
     price: store(BTCPrice),
-    disabled: {
-        value: false,
-        observe(host: GuessComponent & HTMLElement, value: boolean, lastValue: boolean) {
-            console.log('disabled changed', value, lastValue);
-        }
-    },
+    disabled: hasActiveGuesses(),
     render: ({price, disabled}) => html`
         <div>
             ${store.ready(price) ? html`

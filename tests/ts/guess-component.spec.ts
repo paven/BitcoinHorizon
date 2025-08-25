@@ -10,6 +10,15 @@ test.describe('GuessComponent', () => {
             browserLogAttached = true;
         }
         await page.goto('http://localhost:5173/tests.html');
+        // Clear the Guess store in the browser context before each test
+        await page.evaluate(async () => {
+            const mod = await import('/lib/btcGuessStore.ts');
+            const {store} = await import('/lib/btcPriceStore.ts');
+            store.clear(mod.Guess, true);
+            // Also clear the test-only guesses array if present
+            // @ts-ignore
+            window.__guesses__ = store.get([mod.Guess]);
+        });
         console.log('Navigated to test page');
     });
 

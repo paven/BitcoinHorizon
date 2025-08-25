@@ -1,4 +1,4 @@
-import {Model} from 'hybrids';
+import {Model, store} from 'hybrids';
 
 // In-memory enumerable model for guesses.
 // See: https://hybrids.js.org/store/model
@@ -26,4 +26,13 @@ export const Guess: Model<Guess> = {
     // resolutionPrice and resolutionTimestamp are optional and not included in the model definition,
     // so they will be undefined unless set by store.set().
     // To persist or fetch, add [store.connect]: { ... }
-};
+}
+
+// Utility: Returns true if there are any active guesses (status 'new' or 'pending')
+// should be enough to look at latest, if we want to optimize
+export function hasActiveGuesses(): boolean {
+    const allGuesses = store.get([Guess]);
+    return Array.isArray(allGuesses) && allGuesses.some(
+        g => g.status === 'new' || g.status === 'pending'
+    );
+}
