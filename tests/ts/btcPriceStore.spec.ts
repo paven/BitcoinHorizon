@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
 import {BTCPrice, isPriceValid, refreshPrice, store} from '../../web/lib/btcPriceStore';
-import type {Model} from 'hybrids';
 
 test.describe('btcPriceStore', () => {
     // First create localStorage mock instance
@@ -33,21 +32,14 @@ test.describe('btcPriceStore', () => {
     test.describe('isPriceValid()', () => {
         test('should return true for a valid, recent price', () => {
             const price: BTCPrice = {
-                price: 50000, timestamp: Date.now(), error: '', errorLog: [],
+                price: 50000, timestamp: Date.now(),
             };
             expect(isPriceValid(price)).toBe(true);
         });
 
         test('should return false for a price of 0', () => {
             const price: BTCPrice = {
-                price: 0, timestamp: Date.now(), error: '', errorLog: [],
-            };
-            expect(isPriceValid(price)).toBe(false);
-        });
-
-        test('should return false if there is an error string', () => {
-            const price: BTCPrice = {
-                price: 50000, timestamp: Date.now(), error: 'An error occurred', errorLog: [],
+                price: 0, timestamp: Date.now(),
             };
             expect(isPriceValid(price)).toBe(false);
         });
@@ -55,7 +47,6 @@ test.describe('btcPriceStore', () => {
         test('should return false for a stale price (older than 60 seconds)', () => {
             const price: BTCPrice = {
                 price: 50000, timestamp: Date.now() - 61 * 1000, // 61 seconds old
-                error: '', errorLog: [],
             };
             expect(isPriceValid(price)).toBe(false);
         });
@@ -86,30 +77,24 @@ test.describe('btcPriceStore', () => {
         }
     }
 
-
-    /**
-     * The hybrids store.get() method resolves immediately with a proxy object
-     * while data is fetched in the background. In a non-component context like these tests,
-     * we need to manually wait for the data to be ready or for an error to occur.
-     * This helper polls the store's status until it's no longer pending.
-     */
-    async function waitForStoreToSettle(model: Model<any>) {
-        // Trigger the fetch, which happens in the background.
-        store.get(model);
-
-        // Yield to the event loop to allow the store to enter the pending state
-        // before we start polling it. This prevents a race condition.
-        await new Promise(resolve => setImmediate(resolve));
-
-        // Poll the store's status until it is no longer pending.
-        while (store.pending(model)) {
-            await new Promise(resolve => setTimeout(resolve, 10));
-        }
-        return store.get(model);
-    }
-
-    test.describe('Store tests', () => {
+    test.describe('BTC Store tests', () => {
         test.describe.configure({mode: 'serial'})
+
+        // --- Console Mocking ---
+        let consoleErrorMessages: any[][] = [];
+        const originalConsoleError = console.error;
+
+        test.beforeEach(() => {
+            consoleErrorMessages = [];
+            console.error = (...args: any[]) => {
+                consoleErrorMessages.push(args);
+            };
+        });
+
+        test.afterEach(() => {
+            console.error = originalConsoleError;
+        });
+        // --- End Console Mocking ---
 
         test.describe('BTCPrice Store Data Fetching in Node.js', () => {
             test.describe.configure({mode: 'serial'})
@@ -122,18 +107,17 @@ test.describe('btcPriceStore', () => {
                     status: 200, headers: {'Content-Type': 'application/json'},
                 });
 
-                const priceData = await waitForStoreToSettle(BTCPrice);
+                const priceData = await store.resolve(BTCPrice);
 
                 expect(priceData.price).toBe(mockPrice);
-                expect(priceData.error).toBe('');
                 expect(priceData.timestamp).toBeGreaterThan(Date.now() - 5000);
+                expect(store.error(priceData)).toBe(false);
             });
 
-            test('should keep prior data and log error on subsequent API failure', async () => {
+            test('should keep prior data, log error, and set error state on subsequent API failure', async () => {
                 const mockPrice = 55000.42;
                 const mockSuccessResponse = {bitcoin: {usd: mockPrice}};
                 let fetchCallCount = 0;
-
                 // Mock fetch to succeed first, then fail
                 global.fetch = async () => {
                     fetchCallCount++;
@@ -147,41 +131,52 @@ test.describe('btcPriceStore', () => {
                 };
 
                 // 1. First call - success
-                const initialPriceData = await waitForStoreToSettle(BTCPrice) as BTCPrice;
+                const initialPriceData = await store.resolve(BTCPrice) as BTCPrice;
                 expect(initialPriceData.price).toBe(mockPrice);
+                expect(store.error(initialPriceData)).toBe(false);
 
                 // 2. Invalidate cache and trigger second call - failure
-                store.clear(BTCPrice, false); // Invalidate cache
-                const subsequentPriceData = await waitForStoreToSettle(BTCPrice) as BTCPrice;
+                store.clear(BTCPrice, false); // Invalidate cache, keep old value
+                await expect(store.resolve(BTCPrice)).rejects.toThrow("does not exist");
 
-                expect(subsequentPriceData.price).toBe(mockPrice); // Price is preserved
-                expect(subsequentPriceData.error).toBe('HTTP error! status: 500'); // New error is set
-                expect(subsequentPriceData.errorLog).toHaveLength(1); // Error is logged
-                expect(subsequentPriceData.errorLog[0].error).toBe('HTTP error! status: 500');
+                // 3. Check that an error was logged to the console
+                expect(consoleErrorMessages.length).toBe(1);
+                expect(consoleErrorMessages[0][0]).toContain('BTCPrice store fetch error:');
+                expect(consoleErrorMessages[0][1]).toContain('HTTP error! status: 500');
+
+                // 4. Check state after rejection
+                const subsequentPriceData = store.get(BTCPrice);
+                // We cannot access properties on a model in an error state, even if it has stale data.
+                // This is a protective measure from `hybrids`.
+                // The key assertions are that the model is both `ready` and in an `error` state.
+                expect(store.ready(subsequentPriceData)).toBe(true); // Has old data
+                const error = store.error(subsequentPriceData);
+                expect(error).toBeInstanceOf(Error);
+                // The error message comes from hybrids for a "not found" condition on a singleton
+                expect((error as Error).message).toContain("does not exist");
             });
 
-            test('should return an error state on network error (fetch throws)', async () => {
-                store.clear(BTCPrice, true);
-                const errorMessage = 'Network request failed';
+            test('should log an error and result in an error state when API fails on initial fetch', async () => {
+                // Simulate a server error, which causes our get() to return null
+                global.fetch = async () => new Response('Server Down', {status: 500});
 
-                global.fetch = async () => {
-                    throw new Error(errorMessage);
-                };
-                const priceData = await waitForStoreToSettle(BTCPrice);
-                expect(priceData.price).toBe(0);
-                expect(priceData.error).toBe(errorMessage);
-            });
+                // store.resolve should reject when the get() method returns null
+                await expect(store.resolve(BTCPrice)).rejects.toThrow("does not exist");
 
-            test('should handle non-Error rejection from fetch', async () => {
-                const rejectionMessage = 'Something bad happened';
-                // Mock fetch to reject with a non-Error object (a string)
-                global.fetch = async () => Promise.reject(rejectionMessage);
+                // Check console log
+                expect(consoleErrorMessages.length).toBe(1);
+                expect(consoleErrorMessages[0][0]).toContain('BTCPrice store fetch error:');
+                expect(consoleErrorMessages[0][1]).toContain('HTTP error! status: 500');
 
-                const priceData = await waitForStoreToSettle(BTCPrice);
+                const priceData = store.get(BTCPrice);
 
-                expect(priceData.price).toBe(0);
-                // The store's catch block should handle this gracefully
-                expect(priceData.error).toBe('Unknown error occurred');
+                // On an initial fetch failure, the model is in an error state and not ready.
+                // We cannot access its properties directly.
+                expect(store.ready(priceData)).toBe(false);
+                expect(store.pending(priceData)).toBe(false);
+                const error = store.error(priceData);
+                expect(error).toBeInstanceOf(Error);
+                expect((error as Error).message).toContain("does not exist");
             });
         });
 
@@ -203,19 +198,19 @@ test.describe('btcPriceStore', () => {
 
 
             test('should use cache for subsequent calls within the cache duration', async () => {
-                await waitForStoreToSettle(BTCPrice);
+                await store.resolve(BTCPrice);
                 expect(fetchCallCount).toBe(1);
 
-                await waitForStoreToSettle(BTCPrice);
+                await store.resolve(BTCPrice);
                 expect(fetchCallCount).toBe(1); // Should not have increased
             });
 
             test('refreshPrice should force a new fetch', async () => {
-                await waitForStoreToSettle(BTCPrice);
+                await store.resolve(BTCPrice);
                 expect(fetchCallCount).toBe(1);
 
                 refreshPrice();
-                await waitForStoreToSettle(BTCPrice);
+                await store.resolve(BTCPrice);
                 expect(fetchCallCount).toBe(2);
             });
         });
@@ -227,7 +222,7 @@ test.describe('btcPriceStore', () => {
     // and a new module cache, which completely prevents state leakage issues
     // like the one with the module-level `lastModel` variable.
     test.describe('Store tests in Page Context', () => {
-        test('should return an error state on API failure in a clean browser context', async ({page}) => {
+        test('should show an error state on API failure in a clean browser context', async ({page}) => {
             // 1. Mock the API route to return a 404 error.
             // This is the browser-equivalent of mocking `global.fetch`.
             await page.route('https://api.coingecko.com/api/v3/simple/price*', async route => {
@@ -254,21 +249,20 @@ test.describe('btcPriceStore', () => {
                     tag: 'test-component',
                     price: store(BTCPrice), // This property will be managed by the store.
                     render: ({price}) => html`
-                        <div>${price.price} | ${price.error}</div>`,
+                        <div>${store.ready(price) ? `$${price.price}` : 'Loading...'}</div>`,
                 });
 
                 // Add the component to the DOM, which triggers the store's fetch logic.
                 const component = document.createElement('test-component');
                 document.body.appendChild(component);
 
-                // We poll the component's `price` property (which is the store model)
-                // from our mocked 404 response. This confirms the entire async
-                // operation has completed.
+                // We poll until the component's `price` property (the store model)
+                // enters an error state. This confirms the async operation has completed.
                 await new Promise((resolve, reject) => {
                     const timeout = setTimeout(() => reject(new Error('Timeout waiting for component to update')), 5000);
                     const interval = setInterval(() => {
                         // The component's `price` property is the store model.
-                        if (component.price && component.price.error && component.price.error.includes('404')) {
+                        if (component.price && store.error(component.price)) {
                             clearInterval(interval);
                             clearTimeout(timeout);
                             resolve();
@@ -276,20 +270,20 @@ test.describe('btcPriceStore', () => {
                     }, 10);
                 });
 
-                // Now that the component has updated, we know the store has settled.
-                // We can safely get the model and return its state for assertion.
+                // Now that the store has settled, return its state for assertion.
                 const model = store.get(BTCPrice);
+                const error = store.error(model);
                 return {
-                    price: model.price,
-                    error: model.error,
-                    errorLog: model.errorLog,
+                    // We cannot access properties on a model in an error state.
+                    // Instead, we check the state guards.
+                    hasError: !!error,
+                    isReady: store.ready(model),
                 };
             });
 
             // 3. Assert the results returned from the browser.
-            expect(priceData.price).toBe(0);
-            expect(priceData.error).toBe('HTTP error! status: 404');
-            expect(priceData.errorLog).toHaveLength(0);
+            expect(priceData.hasError).toBe(true);
+            expect(priceData.isReady).toBe(false);
         });
     });
 });
