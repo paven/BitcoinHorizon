@@ -1,5 +1,57 @@
 import {Model, store} from 'hybrids';
 import {GuessEvaluator} from "../components/guess-evaluator";
+import BTCPrice, {refreshPrice} from "./btcPriceStore";
+
+// A single in-memory store for tests, to ensure it persists across calls. Exported for cleanup in tests.
+export const testInMemoryStore = {};
+
+// A simple localStorage connector for hybrids.js store, based on the provided example.
+function localStorageStore(key: string) {
+    // Check if localStorage is available to avoid errors in non-browser environments.
+    if (typeof window === 'undefined' || !window.localStorage) {
+        console.warn('localStorage is not available. Guesses will not be persisted.');
+        // Provide a simple in-memory store for non-browser environments like tests.
+        return {
+            get: (id: string) => testInMemoryStore[id] || null,
+            set: (id: string | undefined, values: Guess | null) => {
+                if (values === null) {
+                    if (id) delete testInMemoryStore[id];
+                } else {
+                    const modelId = id || values.id;
+                    testInMemoryStore[modelId] = values;
+                }
+                return values;
+            },
+            list: () => Object.values(testInMemoryStore),
+        };
+    }
+
+    const models = JSON.parse(localStorage.getItem(key) || "{}");
+
+    const save = () => {
+        localStorage.setItem(key, JSON.stringify(models));
+    };
+
+    return {
+        get: (id: string) => models[id] || null,
+        set: (id: string | undefined, values: Guess | null) => {
+            if (values === null) {
+                // Handle deletion
+                if (id) delete models[id];
+            } else {
+                // Handle creation or update
+                const modelId = id || values.id;
+                models[modelId] = values;
+            }
+            save();
+            return values;
+        },
+        list: () => Object.values(models),
+    };
+}
+
+// A lock to prevent race conditions when setting up countdowns.
+const setupLocks = new WeakMap<object, boolean>();
 
 
 // In-memory enumerable model for guesses.
@@ -15,12 +67,12 @@ export interface Guess {
     resolutionTimestamp: number;
     secondsLeft: number;
     playerId: string;
-    intervalId: number | false;
 }
 
 const WAIT_TIME = 10000; //TODO: update to 60s
 
-function getOutcome(guess: Guess): 'correct' | 'incorrect' | 'pending' {
+// Exported for testing purposes
+export function getOutcome(guess: Guess): 'correct' | 'incorrect' | 'pending' {
     if (guess.status !== 'resolved' || guess.initialPrice === -1 || guess.resolutionPrice === -1 || guess.direction === '') return 'pending'
     if (guess.direction === "up" &&
         guess.resolutionPrice > guess.initialPrice)
@@ -43,16 +95,18 @@ export const Guess: Model<Guess> = {
     resolutionTimestamp: -1,
     outcome: (guess) => getOutcome(guess), // default to 'pending'
     playerId: '',
-    intervalId: false,
+    [store.connect]: {
+        ...localStorageStore('btc-guesses'),
+        loose: true,
+    },
 }
 
 // Utility: Returns true if there are any active guesses (status 'new' or 'pending')
 // should be enough to look at latest, if we want to optimize
 export function hasActiveGuesses(): boolean {
-    const allGuesses = store.get([Guess]);
-    return Array.isArray(allGuesses) && allGuesses.some(
-        g => g.status === 'new' || g.status === 'pending'
-    );
+    // Optimization: Only the last guess can be active.
+    const last = lastGuess();
+    return !!last && (last.status === 'new' || last.status === 'pending');
 }
 
 // Utility: Create a guess with timestamp as id
@@ -102,36 +156,72 @@ export function clearCountdown(host: GuessEvaluator | Guess) {
 }
 
 export async function setupCountdown(host: GuessEvaluator) {
-    clearCountdown(host);
-    if (!hasActiveGuesses()) return;
+    // Use a lock to prevent race conditions from multiple rapid calls.
+    if (setupLocks.get(host)) {
+        console.log("Countdown setup already in progress. Exiting.");
+        return;
+    }
+    setupLocks.set(host, true);
 
-    const last = lastGuess();
-    if (!host.guess || !host.guess.id || !last || host.guess.id !== last.id || host.intervalId) return;
+    try {
+        // Clear any previously running interval for this host.
+        clearCountdown(host);
 
-    var guess = host.guess;
-    if (guess && (guess.status === 'new')) {
-        guess = await store.set(guess, {status: 'pending'});
-        const initialSecondsLeft = getSecondsLeft(guess);
-        host.secondsLeft = initialSecondsLeft;
-        guess = await store.set(guess, {secondsLeft: initialSecondsLeft});
-        const intervalId = window.setInterval(async () => {
-            let currentGuess = store.get(Guess, guess.id);
-            if (!currentGuess || currentGuess.status !== 'pending') {
-                clearCountdown(host);
-                return;
-            }
-            const newSecondsLeft = getSecondsLeft(currentGuess);
-            host.secondsLeft = newSecondsLeft;
-            currentGuess = await store.set(currentGuess, {secondsLeft: newSecondsLeft});
-            console.log("tick:", currentGuess.secondsLeft, host.secondsLeft, host.intervalId);
-            if (newSecondsLeft === 0) {
-                clearCountdown(host);
-                await store.set(currentGuess, {status: 'resolved', intervalId: false});
-                console.log('Resolved', hasActiveGuesses(), host.intervalId);
-            }
-        }, 1000);
-        host.intervalId = intervalId;
-        await store.set(guess, {intervalId: intervalId});
+        if (!hasActiveGuesses()) return;
+
+        const last = lastGuess();
+        if (!host.guess || !host.guess.id || !last || host.guess.id !== last.id) return;
+
+        if (host.guess.status === 'new') {
+            let guess = await store.set(host.guess, {status: 'pending'});
+            const initialSecondsLeft = getSecondsLeft(guess);
+            host.secondsLeft = initialSecondsLeft;
+            guess = await store.set(guess, {secondsLeft: initialSecondsLeft});
+
+            let lastPollTimestamp = 0; // Will cause immediate poll on first check
+
+            const tick = async () => {
+                const currentGuess = store.get(Guess, guess.id);
+
+                if (!currentGuess || currentGuess.status !== 'pending') {
+                    console.log("Guess is no longer pending. Stopping interval.");
+                    clearCountdown(host);
+                    return;
+                }
+
+                const newSecondsLeft = getSecondsLeft(currentGuess);
+                host.secondsLeft = newSecondsLeft;
+                await store.set(currentGuess, {secondsLeft: newSecondsLeft});
+                console.log("tick:", newSecondsLeft);
+
+                if (newSecondsLeft <= 0) {
+                    const now = Date.now();
+                    if (now - lastPollTimestamp >= 5000) {
+                        lastPollTimestamp = now;
+
+                        console.log('Polling for price change...');
+                        const btcPrice = await refreshPrice();
+                        const resolutionPrice = btcPrice?.price;
+
+                        if (resolutionPrice !== undefined && resolutionPrice !== currentGuess.initialPrice) {
+                            console.log(`Price changed from ${currentGuess.initialPrice} to ${resolutionPrice}. Resolving.`);
+                            await store.set(currentGuess, {
+                                status: 'resolved',
+                                resolutionPrice: resolutionPrice,
+                                resolutionTimestamp: Date.now(),
+                            });
+                            clearCountdown(host);
+                        } else {
+                            console.log(`Price is ${resolutionPrice}, same as initial ${currentGuess.initialPrice}. Continuing to poll.`);
+                        }
+                    }
+                }
+            };
+
+            host.intervalId = window.setInterval(tick, 1000);
+        }
+    } finally {
+        setupLocks.set(host, false);
     }
 }
 

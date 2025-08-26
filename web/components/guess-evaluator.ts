@@ -6,26 +6,24 @@ import BTCPrice from "../lib/btcPriceStore";
 export interface GuessEvaluator {
     guesses: Guess[];
     guess: Guess;
+    price: BTCPrice;
     secondsLeft: number;
     intervalId: number | false;
 }
 
 export default define<GuessEvaluator>({
     tag: 'guess-evaluator',
+    // Connect to the singleton BTCPrice model
+    price: store(BTCPrice),
     guesses: store([Guess]),
     guess: {
         value: () => lastGuess() || false,
         observe: (host, guess) => {
-            console.log('guess updated', guess)
-            if (guess.status === 'new') setupCountdown(host);
-            else if (guess.status === 'pending' && guess.secondsLeft <= 0)
-                store.set(guess, {status: 'resolved'})
-            else if (guess.status === "resolved" && guess.outcome === 'pending') {
-                var btcPrice = store.get(BTCPrice);
-                if (store.ready(btcPrice) && btcPrice.timestamp <= guess.initialTimestamp + 10000) {
-                    store.set(guess,
-                        {resolutionPrice: btcPrice.price, resolutionTimestamp: btcPrice.timestamp})
-                }
+            console.log('guess updated in evaluator:', guess);
+            // The only responsibility here should be to kick off the process for a new guess.
+            // All other logic for resolution is now handled cleanly in `setupCountdown`.
+            if (guess && guess.status === 'new') {
+                setupCountdown(host);
             }
         }
     },

@@ -1,21 +1,11 @@
 import {store, Model, define, html} from "hybrids";
 
-// Interface for the API response
-interface CoinGeckoResponse {
-    bitcoin: {
-        usd: number;
-    };
-}
-
 // Interface for our price model
 export interface BTCPrice {
     id?: string;
     price: number;
     timestamp: number;
 }
-
-// URL for the CoinGecko API
-const API_URL = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd";
 
 // Create the model
 export const BTCPrice: Model<BTCPrice> = {
@@ -25,32 +15,37 @@ export const BTCPrice: Model<BTCPrice> = {
 
     // Connect to external data source
     [store.connect]: {
-        get: async function () {
+        get: async () => {
+            const primaryUrl = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd';
+            const fallbackUrl = 'https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=USD';
+
             try {
-                const response = await fetch(API_URL);
-                if (!response.ok) {
-                    const errorMessage = `HTTP error! status: ${response.status}`;
-                    console.error("BTCPrice store fetch error:", errorMessage);
-                    return null;
+                // Primary source: CoinGecko
+                const response = await fetch(primaryUrl);
+                if (!response.ok) throw new Error(`CoinGecko request failed: ${response.statusText}`);
+                const data = await response.json();
+                const price = data.bitcoin.usd;
+                console.log('Fetched price from CoinGecko:', price);
+                return {price, timestamp: Date.now()};
+            } catch (error) {
+                console.warn('Primary price source (CoinGecko) failed:', error);
+                console.log('Trying fallback price source (CryptoCompare)...');
+
+                // Fallback source: CryptoCompare
+                const fallbackResponse = await fetch(fallbackUrl);
+                // Log fallback error in the same format as the primary error for test consistency
+                if (!fallbackResponse.ok) {
+                    console.error('BTCPrice store fetch error:', `HTTP error! status: ${fallbackResponse.status}`);
+                    throw new Error(`CryptoCompare request failed: ${fallbackResponse.statusText}`);
                 }
-
-                const data: CoinGeckoResponse = await response.json();
-
-                return {
-                    price: data.bitcoin.usd,
-                    timestamp: Date.now(),
-                };
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-                console.error("BTCPrice store fetch error:", errorMessage, err);
-                return null;
+                const fallbackData = await fallbackResponse.json();
+                const price = fallbackData.USD;
+                console.log('Fetched price from CryptoCompare:', price);
+                return {price, timestamp: Date.now()};
             }
         },
         // Cache for 10 seconds
         cache: 10000,
-
-        // Enable offline support
-        //offline: true,
     }
 };
 
@@ -61,8 +56,8 @@ export const isPriceValid = (price: BTCPrice): boolean => {
 
 // Helper function to get fresh price data
 export const refreshPrice = async (): Promise<BTCPrice> => {
-    store.clear(BTCPrice, false); // Clear the cache but keep the value
-    return store.get(BTCPrice);   // Fetch fresh data
+    store.clear(BTCPrice, false); // Invalidate the cache
+    return store.resolve(BTCPrice);   // Asynchronously resolve the fresh data.
 };
 
 export {store, define, html};

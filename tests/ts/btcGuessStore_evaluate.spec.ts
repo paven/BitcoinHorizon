@@ -1,12 +1,17 @@
 import {test, expect} from '@playwright/test';
-import {Guess, hasActiveGuesses} from '../../web/lib/btcGuessStore';
+import {Guess, hasActiveGuesses, testInMemoryStore} from '../../web/lib/btcGuessStore';
 import {store} from 'hybrids';
 
 test.describe('btcGuessStore evaluate', () => {
-    test.beforeEach(async () => {
-        await store.clear([Guess], true);
-        var guesses = await store.resolve([Guess])
-        guesses.forEach(guess => store.clear(guess), true);
+    test.beforeEach(() => {
+        // For tests, we need a robust way to reset state.
+        // The most reliable method is to directly clear the underlying in-memory storage object.
+        for (const key in testInMemoryStore) {
+            delete testInMemoryStore[key];
+        }
+        // After clearing the raw storage, we must also clear the hybrids cache layer
+        // to ensure it doesn't hold onto stale model instances.
+        store.clear([Guess], true);
     });
 
     test('can add a new guess', async () => {

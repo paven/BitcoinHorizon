@@ -36,7 +36,8 @@ Enabler: tech stack
 - [x] "New players start with a score of 0"
 - [x] "The player can at all times see their current score"
 - [x] "Players should be able to close their browser and return back to see their score"
-- [x] "The score of each player should be persisted in a backend data store (AWS services preferred)"
+- [/] "The score of each player should be persisted in a backend data store (AWS services preferred)"
+  - ! Guesses are persisted in localStorage, not a backend. Score is derived from persisted guesses.
 
 # Feature: Making Price Predictions
 
@@ -47,13 +48,13 @@ Enabler: tech stack
 
 # Feature: Prediction Resolution
 
-- [/] "The guess is resolved when the price changes and at least 60 seconds have passed since the guess was made"
-- [/] "If the guess is correct (up = price went higher, down = price went lower), the user gets 1 point added to their
+- [x] "The guess is resolved when the price changes and at least 60 seconds have passed since the guess was made"
+- [x] "If the guess is correct (up = price went higher, down = price went lower), the user gets 1 point added to their
   score"
-- [/] "If the guess is incorrect, the user loses 1 point"
-- [/] "The guesses should be resolved fairly using BTC price data from any available 3rd party API"
+- [x] "If the guess is incorrect, the user loses 1 point"
+- [x] "The guesses should be resolved fairly using BTC price data from any available 3rd party API"
 - [x] Implement guess-evaluator module
-- [x] Write tests for guess-evaluator
+- [/] Write tests for guess-evaluator
 
 # Feature: Project Deliverables
 

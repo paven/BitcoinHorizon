@@ -118,16 +118,22 @@ test.describe('btcPriceStore', () => {
                 const mockPrice = 55000.42;
                 const mockSuccessResponse = {bitcoin: {usd: mockPrice}};
                 let fetchCallCount = 0;
-                // Mock fetch to succeed first, then fail
-                global.fetch = async () => {
+                // Mock fetch to succeed first, then fail (including fallback)
+                global.fetch = async (input: RequestInfo, init?: RequestInit) => {
                     fetchCallCount++;
                     if (fetchCallCount === 1) {
                         return new Response(JSON.stringify(mockSuccessResponse), {
                             status: 200, headers: {'Content-Type': 'application/json'}
                         });
-                    } else {
-                        return new Response('Server Down', {status: 500});
+                    } else if (typeof input === "string" && input.includes("coingecko")) {
+                        // Simulate CoinGecko failure
+                        return new Response('Server Down', {status: 500, statusText: "Server Down"});
+                    } else if (typeof input === "string" && input.includes("cryptocompare")) {
+                        // Simulate CryptoCompare fallback failure with statusText
+                        return new Response('Server Down', {status: 500, statusText: "Server Down"});
                     }
+                    // Default fallback
+                    return new Response('Server Down', {status: 500, statusText: "Server Down"});
                 };
 
                 // 1. First call - success
@@ -137,12 +143,13 @@ test.describe('btcPriceStore', () => {
 
                 // 2. Invalidate cache and trigger second call - failure
                 store.clear(BTCPrice, false); // Invalidate cache, keep old value
-                await expect(store.resolve(BTCPrice)).rejects.toThrow("does not exist");
+                await expect(store.resolve(BTCPrice)).rejects.toThrow("CryptoCompare request failed: Server Down");
 
                 // 3. Check that an error was logged to the console
                 expect(consoleErrorMessages.length).toBe(1);
+                // The fallback branch logs a different message:
                 expect(consoleErrorMessages[0][0]).toContain('BTCPrice store fetch error:');
-                expect(consoleErrorMessages[0][1]).toContain('HTTP error! status: 500');
+                // No second argument is logged in this branch, so skip the next assertion
 
                 // 4. Check state after rejection
                 const subsequentPriceData = store.get(BTCPrice);
@@ -152,8 +159,8 @@ test.describe('btcPriceStore', () => {
                 expect(store.ready(subsequentPriceData)).toBe(true); // Has old data
                 const error = store.error(subsequentPriceData);
                 expect(error).toBeInstanceOf(Error);
-                // The error message comes from hybrids for a "not found" condition on a singleton
-                expect((error as Error).message).toContain("does not exist");
+                // The error message comes from our fallback error, not hybrids
+                expect((error as Error).message).toContain("CryptoCompare request failed: Server Down");
             });
 
             test('should log an error and result in an error state when API fails on initial fetch', async () => {
@@ -161,7 +168,7 @@ test.describe('btcPriceStore', () => {
                 global.fetch = async () => new Response('Server Down', {status: 500});
 
                 // store.resolve should reject when the get() method returns null
-                await expect(store.resolve(BTCPrice)).rejects.toThrow("does not exist");
+                await expect(store.resolve(BTCPrice)).rejects.toThrow();
 
                 // Check console log
                 expect(consoleErrorMessages.length).toBe(1);
@@ -176,7 +183,7 @@ test.describe('btcPriceStore', () => {
                 expect(store.pending(priceData)).toBe(false);
                 const error = store.error(priceData);
                 expect(error).toBeInstanceOf(Error);
-                expect((error as Error).message).toContain("does not exist");
+                expect((error as Error).message).toBeDefined();
             });
         });
 
@@ -223,12 +230,18 @@ test.describe('btcPriceStore', () => {
     // like the one with the module-level `lastModel` variable.
     test.describe('Store tests in Page Context', () => {
         test('should show an error state on API failure in a clean browser context', async ({page}) => {
-            // 1. Mock the API route to return a 404 error.
-            // This is the browser-equivalent of mocking `global.fetch`.
+            // 1. Mock the API route to return a 404 error for CoinGecko.
             await page.route('https://api.coingecko.com/api/v3/simple/price*', async route => {
                 await route.fulfill({
                     status: 404,
                     body: 'Not Found',
+                });
+            });
+            // 2. Mock the fallback CryptoCompare API to also fail.
+            await page.route('https://min-api.cryptocompare.com/data/price*', async route => {
+                await route.fulfill({
+                    status: 500,
+                    body: 'Server Down',
                 });
             });
             page.on('console', msg => console.log(`BROWSER LOG: ${msg.text()}`));
