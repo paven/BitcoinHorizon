@@ -4,3 +4,4 @@ import './lib/inspectStores';
 import './components/price-component.ts';
 import './components/guess-component.ts';
 import './components/guess-evaluator.ts';
+import './components/score-component.ts';
