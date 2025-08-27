@@ -9,6 +9,7 @@ export interface GuessEvaluator {
     price: BTCPrice;
     secondsLeft: number;
     intervalId: number | false;
+    activeCountdownGuessId: string | null;
 }
 
 export default define<GuessEvaluator>({
@@ -19,18 +20,22 @@ export default define<GuessEvaluator>({
     guess: {
         value: () => lastGuess() || false,
         observe: (host, guess) => {
-            // To prevent restarting the countdown on every model update,
-            // we only call setupCountdown if there isn't an interval already running.
-            if (host.intervalId) return;
+            // To prevent re-triggering the countdown, we check if a countdown
+            // is already active for the current guess.
+            if (!guess || host.activeCountdownGuessId === guess.id) {
+                return;
+            }
 
             // Kick off the countdown process for a new guess, or resume it for a pending one on page load.
             if (guess && (guess.status === 'new' || guess.status === 'pending')) {
+                host.activeCountdownGuessId = guess.id;
                 setupCountdown(host);
             }
         }
     },
     secondsLeft: 60,
     intervalId: false,
+    activeCountdownGuessId: null,
     render: ({guess, guesses, secondsLeft}) => {
         if (!guess) return html`
             <div>No guess, ${guesses.length} guesses made</div>`;

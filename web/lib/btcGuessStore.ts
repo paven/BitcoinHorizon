@@ -2,6 +2,9 @@ import {Model, store} from 'hybrids';
 import {GuessEvaluator} from "../components/guess-evaluator";
 import BTCPrice, {refreshPrice} from "./btcPriceStore";
 
+// A map to store active countdown intervals for guesses. This is not persisted.
+const countdownIntervals = new Map<string, number>();
+
 // A single in-memory store for tests, to ensure it persists across calls. Exported for cleanup in tests.
 export const testInMemoryStore = {};
 
@@ -69,7 +72,7 @@ export interface Guess {
     playerId: string;
 }
 
-const WAIT_TIME = 60000;
+const WAIT_TIME = 3000;
 
 // Exported for testing purposes
 export function getOutcome(guess: Guess): 'correct' | 'incorrect' | 'pending' {
@@ -130,9 +133,10 @@ export function createGuess(params: {
 export function lastGuess(): Guess | null {
     const allGuesses = store.get([Guess]);
     if (!Array.isArray(allGuesses) || allGuesses.length === 0) return null;
-    return store.get(Guess, (allGuesses.reduce((acc: Guess, g: Guess) =>
-        g.initialTimestamp > acc.initialTimestamp ? g : acc).id)
-    );
+    // The list from store.get([Guess]) contains the model instances.
+    // We can directly return the result of the reduce.
+    return allGuesses.reduce((acc: Guess, g: Guess) =>
+        g.initialTimestamp > acc.initialTimestamp ? g : acc);
 }
 
 
@@ -149,9 +153,24 @@ export function getSecondsLeft(guess: Guess) {
 }
 
 export function clearCountdown(host: GuessEvaluator | Guess) {
-    if (host.intervalId !== false) {
-        window.clearInterval(host.intervalId);
-        host.intervalId = false;
+    let guessId: string | undefined;
+
+    // The host can be a component (GuessEvaluator) or a model instance (Guess).
+    // A component will have a `guess` property.
+    if ('guess' in host && (host as GuessEvaluator).guess) {
+        guessId = (host as GuessEvaluator).guess.id;
+    } else if ('id' in host) {
+        guessId = (host as Guess).id;
+    }
+
+    if (guessId && countdownIntervals.has(guessId)) {
+        window.clearInterval(countdownIntervals.get(guessId)!);
+        countdownIntervals.delete(guessId);
+    }
+
+    // Also clear the guess ID lock on the host
+    if ('activeCountdownGuessId' in host) {
+        host.activeCountdownGuessId = null;
     }
 }
 
@@ -164,9 +183,6 @@ export async function setupCountdown(host: GuessEvaluator) {
     setupLocks.set(host, true);
 
     try {
-        // Clear any previously running interval for this host.
-        clearCountdown(host);
-
         if (!hasActiveGuesses()) return;
 
         const last = lastGuess();
@@ -224,7 +240,8 @@ export async function setupCountdown(host: GuessEvaluator) {
                 }
             };
 
-            host.intervalId = window.setInterval(tick, 1000);
+            const intervalId = window.setInterval(tick, 1000);
+            countdownIntervals.set(guess.id, intervalId);
         }
     } finally {
         setupLocks.set(host, false);
