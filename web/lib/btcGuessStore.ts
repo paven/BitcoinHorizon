@@ -72,7 +72,7 @@ export interface Guess {
     playerId: string;
 }
 
-const WAIT_TIME = 3000;
+const WAIT_TIME = 60000;
 
 // Exported for testing purposes
 export function getOutcome(guess: Guess): 'correct' | 'incorrect' | 'pending' {

@@ -8,7 +8,6 @@ export interface GuessEvaluator {
     guess: Guess;
     price: BTCPrice;
     secondsLeft: number;
-    intervalId: number | false;
     activeCountdownGuessId: string | null;
 }
 
@@ -34,7 +33,6 @@ export default define<GuessEvaluator>({
         }
     },
     secondsLeft: 60,
-    intervalId: false,
     activeCountdownGuessId: null,
     render: ({guess, guesses, secondsLeft}) => {
         if (!guess) return html`
