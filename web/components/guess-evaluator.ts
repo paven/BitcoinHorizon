@@ -19,10 +19,12 @@ export default define<GuessEvaluator>({
     guess: {
         value: () => lastGuess() || false,
         observe: (host, guess) => {
-            console.log('guess updated in evaluator:', guess);
-            // The only responsibility here should be to kick off the process for a new guess.
-            // All other logic for resolution is now handled cleanly in `setupCountdown`.
-            if (guess && guess.status === 'new') {
+            // To prevent restarting the countdown on every model update,
+            // we only call setupCountdown if there isn't an interval already running.
+            if (host.intervalId) return;
+
+            // Kick off the countdown process for a new guess, or resume it for a pending one on page load.
+            if (guess && (guess.status === 'new' || guess.status === 'pending')) {
                 setupCountdown(host);
             }
         }
@@ -32,12 +34,19 @@ export default define<GuessEvaluator>({
     render: ({guess, guesses, secondsLeft}) => {
         if (!guess) return html`
             <div>No guess, ${guesses.length} guesses made</div>`;
-        if (guess.status === 'new' || guess.status === 'pending') {
-            return html`
-                <div>
-                    <span>Guess pending. Resolves in: ${secondsLeft}s</span>
-                </div>
-            `;
+        if ((guess.status === 'new' || guess.status === 'pending')) {
+            if (secondsLeft > 0)
+                return html`
+                    <div>
+                        <span>Comparing in: ${secondsLeft}s</span>
+                    </div>
+                `;
+            else
+                return html`
+                    <div>
+                        <span>Looking for price change</span>
+                    </div>
+                `;
         }
         if (guess.status === 'resolved') {
             return html`

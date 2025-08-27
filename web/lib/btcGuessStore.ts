@@ -69,7 +69,7 @@ export interface Guess {
     playerId: string;
 }
 
-const WAIT_TIME = 10000; //TODO: update to 60s
+const WAIT_TIME = 60000;
 
 // Exported for testing purposes
 export function getOutcome(guess: Guess): 'correct' | 'incorrect' | 'pending' {
@@ -172,8 +172,14 @@ export async function setupCountdown(host: GuessEvaluator) {
         const last = lastGuess();
         if (!host.guess || !host.guess.id || !last || host.guess.id !== last.id) return;
 
-        if (host.guess.status === 'new') {
-            let guess = await store.set(host.guess, {status: 'pending'});
+        if (host.guess.status === 'new' || host.guess.status === 'pending') {
+            let guess = host.guess;
+            // If the guess is new, update its status to pending.
+            // If it's already pending (from a page reload), this step is skipped.
+            if (guess.status === 'new') {
+                guess = await store.set(guess, {status: 'pending'});
+            }
+
             const initialSecondsLeft = getSecondsLeft(guess);
             host.secondsLeft = initialSecondsLeft;
             guess = await store.set(guess, {secondsLeft: initialSecondsLeft});
